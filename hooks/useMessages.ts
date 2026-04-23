@@ -32,7 +32,7 @@ export function useUpdateMessageStatus() {
     mutationFn: ({ id, status }: { id: string; status: MessageStatus }) =>
       updateMessageStatus(id, status),
     onSuccess: async () => {
-      toast.success("Message status updated.");
+      toast.success("Statut du message mis a jour.");
       await queryClient.invalidateQueries({ queryKey: ["messages"] });
     },
     onError: (error: Error) => {
@@ -47,7 +47,7 @@ export function useDeleteMessage() {
   return useMutation({
     mutationFn: (id: string) => deleteMessage(id),
     onSuccess: async () => {
-      toast.success("Message deleted.");
+      toast.success("Message supprime.");
       await queryClient.invalidateQueries({ queryKey: ["messages"] });
     },
     onError: (error: Error) => {

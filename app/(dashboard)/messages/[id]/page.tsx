@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Archive, ArrowLeft, Mail, Reply, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
@@ -11,7 +12,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useDeleteMessage, useMessage, useUpdateMessageStatus } from "@/hooks/useMessages";
 import { formatDateTime } from "@/lib/utils";
-import { useState } from "react";
+
+function getStatusLabel(status: "NEW" | "REPLIED" | "ARCHIVED") {
+  if (status === "NEW") return "Nouveau";
+  if (status === "REPLIED") return "Traite";
+  return "Archive";
+}
 
 export default function MessageDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -32,8 +38,8 @@ export default function MessageDetailPage({ params }: { params: { id: string } }
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Message not found</CardTitle>
-          <CardDescription>This preview message does not exist anymore.</CardDescription>
+          <CardTitle>Message introuvable</CardTitle>
+          <CardDescription>Ce message n&apos;existe plus dans les donnees actuelles.</CardDescription>
         </CardHeader>
       </Card>
     );
@@ -46,27 +52,27 @@ export default function MessageDetailPage({ params }: { params: { id: string } }
           <Button variant="outline" asChild>
             <Link href="/messages">
               <ArrowLeft className="h-4 w-4" />
-              Back to messages
+              Retour aux messages
             </Link>
           </Button>
           <div className="flex flex-wrap gap-2">
             <Button asChild>
               <a href={`mailto:${message.email}?subject=Re: ${message.subject}`}>
                 <Reply className="h-4 w-4" />
-                Reply
+                Repondre
               </a>
             </Button>
             <Button variant="outline" onClick={() => updateStatus.mutate({ id: message.id, status: "REPLIED" })}>
               <Mail className="h-4 w-4" />
-              Mark as replied
+              Marquer comme traite
             </Button>
             <Button variant="outline" onClick={() => updateStatus.mutate({ id: message.id, status: "ARCHIVED" })}>
               <Archive className="h-4 w-4" />
-              Archive
+              Archiver
             </Button>
             <Button variant="ghost" className="text-red-500 hover:bg-red-500/10 hover:text-red-600" onClick={() => setConfirmOpen(true)}>
               <Trash2 className="h-4 w-4" />
-              Delete
+              Supprimer
             </Button>
           </div>
         </div>
@@ -77,7 +83,7 @@ export default function MessageDetailPage({ params }: { params: { id: string } }
               <div>
                 <CardTitle>{message.subject}</CardTitle>
                 <CardDescription>
-                  From {message.name} • {message.email}
+                  De {message.name} | {message.email}
                 </CardDescription>
               </div>
               <Badge
@@ -89,11 +95,11 @@ export default function MessageDetailPage({ params }: { params: { id: string } }
                       : "default"
                 }
               >
-                {message.status}
+                {getStatusLabel(message.status)}
               </Badge>
             </div>
             <div className="rounded-2xl border border-border/70 bg-secondary/60 px-4 py-3 text-sm text-muted-foreground">
-              Received on {formatDateTime(message.date)}
+              Recu le {formatDateTime(message.date)}
             </div>
           </CardHeader>
           <div className="px-6 pb-6">
@@ -107,9 +113,9 @@ export default function MessageDetailPage({ params }: { params: { id: string } }
       <ConfirmDialog
         open={confirmOpen}
         onOpenChange={setConfirmOpen}
-        title="Delete this message?"
-        description="This will remove the current message from the preview inbox."
-        confirmLabel="Delete"
+        title="Supprimer ce message ?"
+        description="Le message courant sera retire de la boite de reception."
+        confirmLabel="Supprimer"
         destructive
         loading={deleteMessage.isPending}
         onConfirm={async () => {
@@ -120,4 +126,3 @@ export default function MessageDetailPage({ params }: { params: { id: string } }
     </>
   );
 }
-

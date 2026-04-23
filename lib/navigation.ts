@@ -1,14 +1,8 @@
-import {
-  Activity,
-  Gauge,
-  MapPinned,
-  MessageSquareMore,
-  Settings2
-} from "lucide-react";
+import { Activity, Gauge, MapPinned, MessageSquareMore, Settings2 } from "lucide-react";
 
 export const navigationItems = [
   {
-    title: "Dashboard",
+    title: "Tableau de bord",
     href: "/",
     icon: Gauge
   },
@@ -18,7 +12,7 @@ export const navigationItems = [
     icon: MapPinned
   },
   {
-    title: "Activities",
+    title: "Activites",
     href: "/activities",
     icon: Activity
   },
@@ -28,7 +22,7 @@ export const navigationItems = [
     icon: MessageSquareMore
   },
   {
-    title: "Settings",
+    title: "Parametres",
     href: "/settings",
     icon: Settings2
   }
@@ -37,76 +31,76 @@ export const navigationItems = [
 export function getPageTitle(pathname: string) {
   if (pathname === "/") {
     return {
-      title: "Dashboard Overview",
-      description: "Monitor stations, activity performance, and guest requests in one place."
+      title: "Vue d'ensemble",
+      description: "Suivez les stations, les activites et les demandes clients depuis un seul endroit."
     };
   }
 
   if (pathname.startsWith("/stations/new")) {
     return {
-      title: "New Station",
-      description: "Create a new water station with equipment, map position, and launch details."
+      title: "Nouvelle station",
+      description: "Creez une nouvelle station avec ses equipements, sa position et ses informations d'ouverture."
     };
   }
 
   if (pathname.startsWith("/stations/")) {
     return {
-      title: "Edit Station",
-      description: "Update launch data, media, and operational status."
+      title: "Modifier la station",
+      description: "Mettez a jour les informations d'exploitation, les medias et le statut."
     };
   }
 
   if (pathname.startsWith("/stations")) {
     return {
       title: "Stations",
-      description: "Manage all K-RE launch points, availability, and opening schedules."
+      description: "Gerez les points de depart K-Re, leur disponibilite et leur calendrier d'ouverture."
     };
   }
 
   if (pathname.startsWith("/activities/new")) {
     return {
-      title: "New Activity",
-      description: "Design a new experience and connect it to an existing station."
+      title: "Nouvelle activite",
+      description: "Ajoutez une nouvelle experience et preparez sa publication."
     };
   }
 
   if (pathname.startsWith("/activities/")) {
     return {
-      title: "Edit Activity",
-      description: "Refine activity details, pricing, and presentation."
+      title: "Modifier l'activite",
+      description: "Ajustez les details, le tarif et la presentation de l'activite."
     };
   }
 
   if (pathname.startsWith("/activities")) {
     return {
-      title: "Activities",
-      description: "Curate experiences, pricing, and categories across all stations."
+      title: "Activites",
+      description: "Organisez les experiences, les tarifs et les categories."
     };
   }
 
   if (pathname.startsWith("/messages/")) {
     return {
-      title: "Guest Message",
-      description: "Review the conversation and take action quickly."
+      title: "Message client",
+      description: "Consultez la demande et traitez-la rapidement."
     };
   }
 
   if (pathname.startsWith("/messages")) {
     return {
       title: "Messages",
-      description: "Follow new requests, replies, and archived conversations."
+      description: "Suivez les nouvelles demandes, les reponses et les conversations archivees."
     };
   }
 
   if (pathname.startsWith("/settings")) {
     return {
-      title: "Settings",
-      description: "Manage admin access, contact channels, and recent audit activity."
+      title: "Parametres",
+      description: "Gerez l'acces admin, les canaux de contact et l'historique recent."
     };
   }
 
   return {
-    title: "K-RE Admin",
-    description: "High-clarity control center for your operations team."
+    title: "K-Re Admin",
+    description: "Centre de pilotage de l'equipe d'administration."
   };
 }

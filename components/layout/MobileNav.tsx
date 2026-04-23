@@ -4,11 +4,12 @@ import Link from "next/link";
 import { X } from "lucide-react";
 import { usePathname } from "next/navigation";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/components/providers/AuthProvider";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useMessages } from "@/hooks/useMessages";
-import { adminProfile } from "@/lib/mock-data";
+import { getRoleLabel, getUserInitials } from "@/lib/auth";
 import { navigationItems } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +20,7 @@ interface MobileNavProps {
 
 export function MobileNav({ open, onClose }: MobileNavProps) {
   const pathname = usePathname();
+  const { user } = useAuth();
   const { data: unreadMessages = [] } = useMessages("NEW");
   const unreadCount = unreadMessages.length;
 
@@ -36,7 +38,7 @@ export function MobileNav({ open, onClose }: MobileNavProps) {
             </div>
             <div>
               <p className="font-display text-sm font-semibold">K-Re</p>
-              <p className="text-xs text-slate-300/70">Admin Control</p>
+              <p className="text-xs text-slate-300/70">Espace admin</p>
             </div>
           </Link>
           <Button variant="ghost" size="icon" className="text-white hover:bg-white/10" onClick={onClose}>
@@ -78,17 +80,18 @@ export function MobileNav({ open, onClose }: MobileNavProps) {
         <div className="mt-6 rounded-xl border border-white/10 bg-white/5 p-3">
           <div className="flex items-center gap-2.5">
             <Avatar className="h-9 w-9 ring-2 ring-white/10">
-              <AvatarImage src={adminProfile.avatar} alt={adminProfile.name} />
-              <AvatarFallback>GM</AvatarFallback>
+              <AvatarFallback className="bg-white/10 text-xs font-semibold text-white">
+                {getUserInitials(user?.name)}
+              </AvatarFallback>
             </Avatar>
             <div className="min-w-0">
-              <p className="truncate text-xs font-semibold">{adminProfile.name}</p>
-              <p className="truncate text-xs text-slate-300/70">{adminProfile.role}</p>
+              <p className="truncate text-xs font-semibold">{user?.name ?? "Administrateur"}</p>
+              <p className="truncate text-xs text-slate-300/70">{getRoleLabel(user?.role)}</p>
             </div>
           </div>
         </div>
       </div>
-      <button className="flex-1" onClick={onClose} aria-label="Close menu" />
+      <button className="flex-1" onClick={onClose} aria-label="Fermer le menu" />
     </div>
   );
 }

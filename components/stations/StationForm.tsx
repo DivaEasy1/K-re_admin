@@ -19,15 +19,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { useCreateStation, useStation, useUpdateStation } from "@/hooks/useStations";
 
 const stationSchema = z.object({
-  name: z.string().min(2, "Station name is required."),
-  location: z.string().min(2, "Location is required."),
+  name: z.string().min(2, "Le nom de la station est requis."),
+  location: z.string().min(2, "Le lieu est requis."),
   latitude: z.coerce.number().min(-90).max(90),
   longitude: z.coerce.number().min(-180).max(180),
   status: z.enum(["OPEN", "COMING_SOON", "CLOSED"]),
   openYear: z.coerce.number().min(2020).max(2035),
-  description: z.string().min(20, "Please add a richer description."),
-  equipment: z.array(z.enum(["kayak_solo", "kayak_tandem", "paddle"])).min(1, "Select at least one equipment type."),
-  image: z.string().min(1, "Please upload a cover image.")
+  description: z.string().min(20, "Ajoutez une description plus complete."),
+  equipment: z.array(z.enum(["kayak_solo", "kayak_tandem", "paddle"])).min(1, "Selectionnez au moins un equipement."),
+  image: z.string().min(1, "Ajoutez une image de couverture.")
 });
 
 type StationFormValues = z.infer<typeof stationSchema>;
@@ -96,7 +96,7 @@ export function StationForm({ stationId }: StationFormProps) {
         <Button variant="outline" asChild>
           <Link href="/stations">
             <ArrowLeft className="h-4 w-4" />
-            Back to stations
+            Retour aux stations
           </Link>
         </Button>
         <Button form="station-form" type="submit">
@@ -105,24 +105,24 @@ export function StationForm({ stationId }: StationFormProps) {
           ) : (
             <Save className="h-4 w-4" />
           )}
-          {isEditing ? "Save changes" : "Create station"}
+          {isEditing ? "Enregistrer" : "Creer la station"}
         </Button>
       </div>
 
       <form id="station-form" onSubmit={form.handleSubmit(onSubmit)} className="grid gap-6 xl:grid-cols-[1.2fr,0.8fr]">
         <Card>
           <CardHeader>
-            <CardTitle>{isEditing ? "Edit station" : "Create a new station"}</CardTitle>
-            <CardDescription>Use a complete, polished setup so the catalog is ready when the backend arrives.</CardDescription>
+            <CardTitle>{isEditing ? "Modifier la station" : "Creer une nouvelle station"}</CardTitle>
+            <CardDescription>Renseignez les informations de base pour preparer la fiche station.</CardDescription>
           </CardHeader>
           <div className="grid gap-5 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="name">Nom</Label>
               <Input id="name" {...form.register("name")} />
               <p className="text-sm text-red-500">{form.formState.errors.name?.message}</p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="location">Location</Label>
+              <Label htmlFor="location">Lieu</Label>
               <Input id="location" {...form.register("location")} />
               <p className="text-sm text-red-500">{form.formState.errors.location?.message}</p>
             </div>
@@ -137,15 +137,15 @@ export function StationForm({ stationId }: StationFormProps) {
               <p className="text-sm text-red-500">{form.formState.errors.longitude?.message}</p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
+              <Label htmlFor="status">Statut</Label>
               <Select id="status" {...form.register("status")}>
-                <option value="OPEN">OPEN</option>
-                <option value="COMING_SOON">COMING_SOON</option>
-                <option value="CLOSED">CLOSED</option>
+                <option value="OPEN">Ouverte</option>
+                <option value="COMING_SOON">Bientot</option>
+                <option value="CLOSED">Fermee</option>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="openYear">Open Year</Label>
+              <Label htmlFor="openYear">Annee d&apos;ouverture</Label>
               <Input id="openYear" type="number" {...form.register("openYear")} />
               <p className="text-sm text-red-500">{form.formState.errors.openYear?.message}</p>
             </div>
@@ -155,7 +155,7 @@ export function StationForm({ stationId }: StationFormProps) {
               <p className="text-sm text-red-500">{form.formState.errors.description?.message}</p>
             </div>
             <div className="space-y-3 md:col-span-2">
-              <Label>Equipment</Label>
+              <Label>Equipements</Label>
               <div className="grid gap-3 sm:grid-cols-3">
                 {equipmentOptions.map((option) => {
                   const checked = form.watch("equipment").includes(option.value);
@@ -192,11 +192,11 @@ export function StationForm({ stationId }: StationFormProps) {
 
         <Card>
           <CardHeader>
-            <CardTitle>Media preview</CardTitle>
-            <CardDescription>Drag and drop a strong cover image so cards and tables already feel finished.</CardDescription>
+            <CardTitle>Image</CardTitle>
+            <CardDescription>Ajoutez un visuel de couverture propre pour la liste et les fiches.</CardDescription>
           </CardHeader>
           <div className="space-y-3">
-            {isLoading && isEditing ? <p className="text-sm text-muted-foreground">Loading station details...</p> : null}
+            {isLoading && isEditing ? <p className="text-sm text-muted-foreground">Chargement des details de la station...</p> : null}
             <Controller
               control={form.control}
               name="image"
@@ -209,4 +209,3 @@ export function StationForm({ stationId }: StationFormProps) {
     </div>
   );
 }
-

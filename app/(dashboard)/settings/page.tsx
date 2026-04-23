@@ -6,11 +6,13 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { useAuth } from "@/components/providers/AuthProvider";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { adminProfile, auditEntries, contactSettings } from "@/lib/mock-data";
+import { getRoleLabel } from "@/lib/auth";
+import { auditEntries, contactSettings } from "@/lib/mock-data";
 import { formatDateTime } from "@/lib/utils";
 
 const passwordSchema = z
@@ -20,7 +22,7 @@ const passwordSchema = z
     confirmPassword: z.string().min(6)
   })
   .refine((values) => values.newPassword === values.confirmPassword, {
-    message: "Passwords do not match.",
+    message: "Les mots de passe ne correspondent pas.",
     path: ["confirmPassword"]
   });
 
@@ -34,6 +36,8 @@ type PasswordValues = z.infer<typeof passwordSchema>;
 type ContactValues = z.infer<typeof contactSchema>;
 
 export default function SettingsPage() {
+  const { user } = useAuth();
+
   const passwordForm = useForm<PasswordValues>({
     resolver: zodResolver(passwordSchema),
     defaultValues: {
@@ -58,34 +62,34 @@ export default function SettingsPage() {
                 <ShieldCheck className="h-6 w-6" />
               </div>
               <div>
-                <CardTitle>Change admin password</CardTitle>
-                <CardDescription>Preview secure account settings for the operations team.</CardDescription>
+                <CardTitle>Modifier le mot de passe admin</CardTitle>
+                <CardDescription>Zone de demonstration pour la gestion de securite du compte.</CardDescription>
               </div>
             </div>
           </CardHeader>
           <form
             className="space-y-4"
             onSubmit={passwordForm.handleSubmit(() => {
-              toast.success("Password updated in preview mode.");
+              toast.success("Mot de passe mis a jour en mode demonstration.");
               passwordForm.reset();
             })}
           >
             <div className="space-y-2">
-              <Label htmlFor="currentPassword">Current password</Label>
+              <Label htmlFor="currentPassword">Mot de passe actuel</Label>
               <Input id="currentPassword" type="password" {...passwordForm.register("currentPassword")} />
               <p className="text-sm text-red-500">{passwordForm.formState.errors.currentPassword?.message}</p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="newPassword">New password</Label>
+              <Label htmlFor="newPassword">Nouveau mot de passe</Label>
               <Input id="newPassword" type="password" {...passwordForm.register("newPassword")} />
               <p className="text-sm text-red-500">{passwordForm.formState.errors.newPassword?.message}</p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm password</Label>
+              <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
               <Input id="confirmPassword" type="password" {...passwordForm.register("confirmPassword")} />
               <p className="text-sm text-red-500">{passwordForm.formState.errors.confirmPassword?.message}</p>
             </div>
-            <Button type="submit">Update password</Button>
+            <Button type="submit">Mettre a jour</Button>
           </form>
         </Card>
 
@@ -96,23 +100,23 @@ export default function SettingsPage() {
                 <UserRoundCog className="h-6 w-6" />
               </div>
               <div>
-                <CardTitle>Admin profile</CardTitle>
-                <CardDescription>Core operator details shown across the dashboard shell.</CardDescription>
+                <CardTitle>Profil administrateur</CardTitle>
+                <CardDescription>Informations actuelles de l&apos;utilisateur connecte.</CardDescription>
               </div>
             </div>
           </CardHeader>
           <div className="grid gap-3 text-sm">
             <div className="rounded-2xl border border-border/70 bg-secondary/50 px-4 py-3">
-              <p className="text-muted-foreground">Name</p>
-              <p className="mt-1 font-semibold">{adminProfile.name}</p>
+              <p className="text-muted-foreground">Nom</p>
+              <p className="mt-1 font-semibold">{user?.name ?? "Administrateur"}</p>
             </div>
             <div className="rounded-2xl border border-border/70 bg-secondary/50 px-4 py-3">
               <p className="text-muted-foreground">Role</p>
-              <p className="mt-1 font-semibold">{adminProfile.role}</p>
+              <p className="mt-1 font-semibold">{getRoleLabel(user?.role)}</p>
             </div>
             <div className="rounded-2xl border border-border/70 bg-secondary/50 px-4 py-3">
-              <p className="text-muted-foreground">Email</p>
-              <p className="mt-1 font-semibold">{adminProfile.email}</p>
+              <p className="text-muted-foreground">E-mail</p>
+              <p className="mt-1 font-semibold">{user?.email ?? "-"}</p>
             </div>
           </div>
         </Card>
@@ -121,40 +125,40 @@ export default function SettingsPage() {
       <div className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle>Contact info</CardTitle>
-            <CardDescription>Control the key communication channels displayed to the team.</CardDescription>
+            <CardTitle>Coordonnees</CardTitle>
+            <CardDescription>Controlez les canaux de contact visibles dans l&apos;espace admin.</CardDescription>
           </CardHeader>
           <form
             className="grid gap-4 md:grid-cols-2"
             onSubmit={contactForm.handleSubmit(() => {
-              toast.success("Contact information saved in preview mode.");
+              toast.success("Coordonnees enregistrees en mode demonstration.");
             })}
           >
             <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="officeEmail">Office email</Label>
+              <Label htmlFor="officeEmail">E-mail principal</Label>
               <Input id="officeEmail" {...contactForm.register("officeEmail")} />
               <p className="text-sm text-red-500">{contactForm.formState.errors.officeEmail?.message}</p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="officePhone">Office phone</Label>
+              <Label htmlFor="officePhone">Telephone</Label>
               <Input id="officePhone" {...contactForm.register("officePhone")} />
               <p className="text-sm text-red-500">{contactForm.formState.errors.officePhone?.message}</p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="emergencyLine">Emergency line</Label>
+              <Label htmlFor="emergencyLine">Numero d&apos;urgence</Label>
               <Input id="emergencyLine" {...contactForm.register("emergencyLine")} />
               <p className="text-sm text-red-500">{contactForm.formState.errors.emergencyLine?.message}</p>
             </div>
             <div className="md:col-span-2">
-              <Button type="submit">Save contact info</Button>
+              <Button type="submit">Enregistrer les coordonnees</Button>
             </div>
           </form>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Audit log</CardTitle>
-            <CardDescription>Recent admin actions across pricing, inbox management, and network updates.</CardDescription>
+            <CardTitle>Journal d&apos;activite</CardTitle>
+            <CardDescription>Dernieres actions admin sur les tarifs, la messagerie et les stations.</CardDescription>
           </CardHeader>
           <div className="space-y-3">
             {auditEntries.map((entry) => (
@@ -163,7 +167,7 @@ export default function SettingsPage() {
                   <div>
                     <p className="font-semibold">{entry.action}</p>
                     <p className="text-sm text-muted-foreground">
-                      {entry.actor} • {entry.context}
+                      {entry.actor} | {entry.context}
                     </p>
                   </div>
                   <p className="text-sm text-muted-foreground">{formatDateTime(entry.date)}</p>

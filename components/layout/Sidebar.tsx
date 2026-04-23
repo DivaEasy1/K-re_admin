@@ -4,11 +4,12 @@ import Link from "next/link";
 import { ChevronRight, ChevronsLeftRight, Plus } from "lucide-react";
 import { usePathname } from "next/navigation";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/components/providers/AuthProvider";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useMessages } from "@/hooks/useMessages";
-import { adminProfile } from "@/lib/mock-data";
+import { getRoleLabel, getUserInitials } from "@/lib/auth";
 import { navigationItems } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 
@@ -19,8 +20,10 @@ interface SidebarProps {
 
 export function Sidebar({ expanded, onToggle }: SidebarProps) {
   const pathname = usePathname();
+  const { user } = useAuth();
   const { data: unreadMessages = [] } = useMessages("NEW");
   const unreadCount = unreadMessages.length;
+  const initials = getUserInitials(user?.name);
 
   return (
     <aside
@@ -44,7 +47,7 @@ export function Sidebar({ expanded, onToggle }: SidebarProps) {
             {expanded ? (
               <div>
                 <p className="font-display text-sm font-semibold">K-Re</p>
-                <p className="text-xs text-slate-300/70">Admin Control</p>
+                <p className="text-xs text-slate-300/70">Espace admin</p>
               </div>
             ) : null}
           </div>
@@ -96,7 +99,7 @@ export function Sidebar({ expanded, onToggle }: SidebarProps) {
         >
           <div className="flex items-center gap-2">
             <ChevronsLeftRight className="h-3.5 w-3.5" />
-            {expanded ? <span>Toggle labels</span> : null}
+            {expanded ? <span>Afficher les libelles</span> : null}
           </div>
         </Button>
 
@@ -113,8 +116,8 @@ export function Sidebar({ expanded, onToggle }: SidebarProps) {
             </div>
             {expanded ? (
               <div>
-                <p className="text-xs font-semibold text-white">Quick add</p>
-                <p className="text-xs text-slate-300/70">Launch a new station</p>
+                <p className="text-xs font-semibold text-white">Ajout rapide</p>
+                <p className="text-xs text-slate-300/70">Creer une nouvelle station</p>
               </div>
             ) : null}
           </div>
@@ -123,13 +126,12 @@ export function Sidebar({ expanded, onToggle }: SidebarProps) {
         <div className={cn("rounded-xl border border-white/10 bg-white/5 p-2.5", expanded ? "" : "flex justify-center")}>
           <div className={cn("flex items-center gap-2.5", !expanded && "flex-col")}>
             <Avatar className="h-9 w-9 ring-2 ring-white/10">
-              <AvatarImage src={adminProfile.avatar} alt={adminProfile.name} />
-              <AvatarFallback>GM</AvatarFallback>
+              <AvatarFallback className="bg-white/10 text-xs font-semibold text-white">{initials}</AvatarFallback>
             </Avatar>
             {expanded ? (
               <div className="min-w-0">
-                <p className="truncate text-xs font-semibold text-white">{adminProfile.name}</p>
-                <p className="truncate text-xs text-slate-300/70">{adminProfile.role}</p>
+                <p className="truncate text-xs font-semibold text-white">{user?.name ?? "Administrateur"}</p>
+                <p className="truncate text-xs text-slate-300/70">{getRoleLabel(user?.role)}</p>
               </div>
             ) : null}
           </div>

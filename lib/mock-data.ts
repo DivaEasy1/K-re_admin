@@ -15,106 +15,92 @@ let stations: Station[] = [
   {
     id: "st-01",
     name: "Lagoon Bay",
-    location: "Dakhla Atlantic Marina",
+    location: "Marina Atlantique de Dakhla",
     latitude: 23.7162,
     longitude: -15.9361,
     status: "OPEN",
     openYear: 2022,
-    description:
-      "Flagship lagoon station with premium guest services, lockers, and early sunrise departures.",
+    description: "Station lagon principale avec services premium, casiers et departs matinaux.",
     equipment: ["kayak_solo", "kayak_tandem", "paddle"],
-    image:
-      "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1200&q=80"
+    image: "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1200&q=80"
   },
   {
     id: "st-02",
     name: "Cliffside Dock",
-    location: "Essaouira Wind Point",
+    location: "Point Vent d'Essaouira",
     latitude: 31.5085,
     longitude: -9.7595,
     status: "OPEN",
     openYear: 2023,
-    description:
-      "High-energy coastal station focused on sport packages and guided coastline circuits.",
+    description: "Station cotiere orientee sport avec parcours guides et offres dynamiques.",
     equipment: ["kayak_solo", "paddle"],
-    image:
-      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80"
+    image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80"
   },
   {
     id: "st-03",
     name: "Blue Haven",
-    location: "Al Hoceima Waterfront",
+    location: "Front de mer d'Al Hoceima",
     latitude: 35.2493,
     longitude: -3.9371,
     status: "COMING_SOON",
     openYear: 2026,
-    description:
-      "Upcoming Mediterranean location designed for families, soft adventures, and sunset tours.",
+    description: "Nouvelle implantation mediterraneenne pensee pour les familles et les sorties douces.",
     equipment: ["kayak_tandem", "paddle"],
-    image:
-      "https://images.unsplash.com/photo-1493558103817-58b2924bce98?auto=format&fit=crop&w=1200&q=80"
+    image: "https://images.unsplash.com/photo-1493558103817-58b2924bce98?auto=format&fit=crop&w=1200&q=80"
   },
   {
     id: "st-04",
     name: "Palm Harbor",
-    location: "Agadir Bay",
+    location: "Baie d'Agadir",
     latitude: 30.4278,
     longitude: -9.5981,
     status: "CLOSED",
     openYear: 2021,
-    description:
-      "Seasonal hub under maintenance while the team upgrades guest flow and storage capacity.",
+    description: "Base saisonniere en maintenance pendant la mise a niveau des operations.",
     equipment: ["kayak_solo", "kayak_tandem"],
-    image:
-      "https://images.unsplash.com/photo-1473116763249-2faaef81ccda?auto=format&fit=crop&w=1200&q=80"
+    image: "https://images.unsplash.com/photo-1473116763249-2faaef81ccda?auto=format&fit=crop&w=1200&q=80"
   }
 ];
 
 let activities: Activity[] = [
   {
     id: "ac-01",
-    title: "Sunrise Kayak Escape",
-    description:
-      "Early morning guided paddle for small groups with photo stops and warm drinks on return.",
-    duration: "2h 30m",
+    title: "Echappee kayak au lever du jour",
+    description: "Sortie guidee au lever du soleil pour petits groupes avec pauses photo.",
+    duration: "2 h 30",
     difficulty: "EASY",
-    price: "420 MAD",
+    price: 420,
+    priceLabel: "A partir de 420 MAD",
     icon: "🌅",
     category: "nature",
-    stationId: "st-01",
-    stationName: "Lagoon Bay",
-    image:
-      "https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?auto=format&fit=crop&w=1200&q=80"
+    maxParticipants: 10,
+    image: "https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?auto=format&fit=crop&w=1200&q=80"
   },
   {
     id: "ac-02",
-    title: "Atlantic Power Paddle",
-    description:
-      "Advanced coastal ride with guide pacing, route checkpoints, and wind briefing included.",
-    duration: "1h 45m",
+    title: "Parcours atlantique sportif",
+    description: "Parcours cotier soutenu avec briefing vent, rythme guide et checkpoints.",
+    duration: "1 h 45",
     difficulty: "HARD",
-    price: "590 MAD",
+    price: 590,
+    priceLabel: "A partir de 590 MAD",
     icon: "🌊",
     category: "sport",
-    stationId: "st-02",
-    stationName: "Cliffside Dock",
-    image:
-      "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1200&q=80"
+    maxParticipants: 8,
+    image: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1200&q=80"
   },
   {
     id: "ac-03",
-    title: "Lagoon Brunch Cruise",
-    description:
-      "Relaxed tandem kayak route ending with a floating brunch setup by the shore team.",
-    duration: "3h",
+    title: "Croisiere brunch sur le lagon",
+    description: "Balade detendue en kayak tandem avec brunch prepare au retour par l'equipe.",
+    duration: "3 h",
     difficulty: "MEDIUM",
-    price: "720 MAD",
+    price: 720,
+    priceLabel: "A partir de 720 MAD",
     icon: "🥐",
     category: "gastronomy",
-    stationId: "st-01",
-    stationName: "Lagoon Bay",
-    image:
-      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80"
+    maxParticipants: 12,
+    image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80"
   }
 ];
 
@@ -123,9 +109,8 @@ let messages: Message[] = [
     id: "msg-01",
     name: "Salma Idrissi",
     email: "salma@example.com",
-    subject: "Private group booking for 12 guests",
-    content:
-      "Hello, we would like to reserve a sunrise kayak session for a team retreat on May 18. Could you confirm availability and group pricing?",
+    subject: "Reservation groupe prive pour 12 personnes",
+    content: "Bonjour, nous souhaitons reserver une session kayak au lever du jour pour un team retreat le 18 mai. Pouvez-vous confirmer la disponibilite et le tarif groupe ?",
     date: "2026-03-31T09:30:00.000Z",
     status: "NEW"
   },
@@ -133,9 +118,8 @@ let messages: Message[] = [
     id: "msg-02",
     name: "Yassine El Fassi",
     email: "yassine@example.com",
-    subject: "Question about Blue Haven opening",
-    content:
-      "Hi team, I saw Blue Haven on Instagram. Is the station opening this summer, and will paddle lessons be available for beginners?",
+    subject: "Question sur l'ouverture de Blue Haven",
+    content: "Bonjour, j'ai vu Blue Haven sur Instagram. La station ouvrira-t-elle cet ete et y aura-t-il des cours de paddle pour debutants ?",
     date: "2026-03-30T15:15:00.000Z",
     status: "NEW"
   },
@@ -143,9 +127,8 @@ let messages: Message[] = [
     id: "msg-03",
     name: "Mina Dupont",
     email: "mina@example.com",
-    subject: "Need invoice for last weekend",
-    content:
-      "Can you please send me the invoice for our Lagoon Brunch Cruise booking from last Saturday? Thank you.",
+    subject: "Besoin d'une facture pour le week-end dernier",
+    content: "Pouvez-vous m'envoyer la facture de notre reservation Lagoon Brunch Cruise du samedi dernier ? Merci.",
     date: "2026-03-28T11:00:00.000Z",
     status: "REPLIED"
   },
@@ -153,24 +136,23 @@ let messages: Message[] = [
     id: "msg-04",
     name: "Nora Benali",
     email: "nora@example.com",
-    subject: "Accessibility at Cliffside Dock",
-    content:
-      "I’m planning a family visit and wanted to ask if the access path and waiting lounge are suitable for reduced mobility.",
+    subject: "Accessibilite a Cliffside Dock",
+    content: "Je prepare une visite en famille et je voulais savoir si le chemin d'acces et la zone d'attente conviennent aux personnes a mobilite reduite.",
     date: "2026-03-24T13:40:00.000Z",
     status: "ARCHIVED"
   }
 ];
 
 export const dashboardTrend: ChartPoint[] = [
-  { month: "Oct", reservations: 42, revenue: 18, messages: 8 },
-  { month: "Nov", reservations: 48, revenue: 20, messages: 9 },
-  { month: "Dec", reservations: 39, revenue: 16, messages: 7 },
-  { month: "Jan", reservations: 66, revenue: 31, messages: 14 },
-  { month: "Feb", reservations: 72, revenue: 34, messages: 11 },
-  { month: "Mar", reservations: 84, revenue: 41, messages: 15 },
-  { month: "Apr", reservations: 97, revenue: 46, messages: 17 },
-  { month: "May", reservations: 101, revenue: 52, messages: 16 },
-  { month: "Jun", reservations: 95, revenue: 48, messages: 13 }
+  { month: "oct.", reservations: 42, revenue: 18, messages: 8 },
+  { month: "nov.", reservations: 48, revenue: 20, messages: 9 },
+  { month: "dec.", reservations: 39, revenue: 16, messages: 7 },
+  { month: "janv.", reservations: 66, revenue: 31, messages: 14 },
+  { month: "fevr.", reservations: 72, revenue: 34, messages: 11 },
+  { month: "mars", reservations: 84, revenue: 41, messages: 15 },
+  { month: "avr.", reservations: 97, revenue: 46, messages: 17 },
+  { month: "mai", reservations: 101, revenue: 52, messages: 16 },
+  { month: "juin", reservations: 95, revenue: 48, messages: 13 }
 ];
 
 export const stationTraffic: StationTrafficPoint[] = [
@@ -181,11 +163,10 @@ export const stationTraffic: StationTrafficPoint[] = [
 ];
 
 export const adminProfile: AdminProfile = {
-  name: "Gérard Menvusa",
-  role: "Operations Lead",
+  name: "Gerard Menvusa",
+  role: "Responsable operations",
   email: "gerard@k-re.ma",
-  avatar:
-    "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80",
+  avatar: "",
   lastLogin: "2026-04-02T07:42:00.000Z"
 };
 
@@ -198,22 +179,22 @@ export const contactSettings: ContactSettings = {
 export const auditEntries: AuditEntry[] = [
   {
     id: "audit-01",
-    action: "Updated activity pricing",
-    actor: "Gérard Menvusa",
+    action: "Tarification d'activite mise a jour",
+    actor: "Gerard Menvusa",
     date: "2026-04-01T16:20:00.000Z",
-    context: "Atlantic Power Paddle"
+    context: "Parcours atlantique sportif"
   },
   {
     id: "audit-02",
-    action: "Archived guest message",
+    action: "Message client archive",
     actor: "Ines Harrouch",
     date: "2026-04-01T10:05:00.000Z",
-    context: "Invoice request"
+    context: "Demande de facture"
   },
   {
     id: "audit-03",
-    action: "Added new station draft",
-    actor: "Gérard Menvusa",
+    action: "Brouillon de station ajoute",
+    actor: "Gerard Menvusa",
     date: "2026-03-29T14:48:00.000Z",
     context: "Blue Haven"
   }
@@ -241,9 +222,7 @@ export async function createStation(station: Omit<Station, "id">) {
 
 export async function updateStation(id: string, values: Omit<Station, "id">) {
   await wait(700);
-  stations = stations.map((station) =>
-    station.id === id ? { ...station, ...values, id } : station
-  );
+  stations = stations.map((station) => (station.id === id ? { ...station, ...values, id } : station));
   return cloneData(stations.find((station) => station.id === id) ?? null);
 }
 
@@ -281,9 +260,7 @@ export async function createActivity(activity: Omit<Activity, "id">) {
 
 export async function updateActivity(id: string, values: Omit<Activity, "id">) {
   await wait(700);
-  activities = activities.map((activity) =>
-    activity.id === id ? { ...activity, ...values, id } : activity
-  );
+  activities = activities.map((activity) => (activity.id === id ? { ...activity, ...values, id } : activity));
   return cloneData(activities.find((activity) => activity.id === id) ?? null);
 }
 
@@ -340,4 +317,3 @@ export function getDashboardStats() {
 export function getUnreadMessagesCount() {
   return messages.filter((message) => message.status === "NEW").length;
 }
-

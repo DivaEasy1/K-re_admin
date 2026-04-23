@@ -1,55 +1,127 @@
-const AUTH_TOKEN_KEY = "k-re-admin-token";
-const ADMIN_EMAIL = "admin@k-re.ma";
-const ADMIN_PASSWORD = "oceanadmin";
+import axios from "axios";
 
-export function getAuthToken() {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  return window.localStorage.getItem(AUTH_TOKEN_KEY);
+export interface AuthUser {
+  id: string;
+  email: string;
+  name: string;
+  role: "ADMIN" | "SUPER_ADMIN";
+  lastLoginAt?: string | null;
 }
 
-export function setAuthToken(token: string) {
-  if (typeof window === "undefined") {
-    return;
+const authApi = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  withCredentials: true
+});
+
+function getErrorMessage(error: unknown, fallback: string) {
+  if (axios.isAxiosError(error)) {
+    return error.response?.data?.error || error.response?.data?.message || error.message || fallback;
   }
 
-  window.localStorage.setItem(AUTH_TOKEN_KEY, token);
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return fallback;
 }
 
-export function clearAuthToken() {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  window.localStorage.removeItem(AUTH_TOKEN_KEY);
+async function requestCurrentAdmin() {
+  const response = await authApi.get("/auth/me");
+  return (response.data.data || response.data) as AuthUser;
 }
 
 export async function refreshAuthToken() {
-  return null;
+  try {
+    await authApi.post("/auth/refresh", {});
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function getCurrentAdmin() {
+  try {
+    return await requestCurrentAdmin();
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.status === 401) {
+      const refreshed = await refreshAuthToken();
+
+      if (!refreshed) {
+        return null;
+      }
+
+      try {
+        return await requestCurrentAdmin();
+      } catch {
+        return null;
+      }
+    }
+
+    throw new Error(getErrorMessage(error, "Impossible de recuperer la session."));
+  }
 }
 
 export async function loginAdmin(email: string, password: string) {
-  await new Promise((resolve) => setTimeout(resolve, 900));
+  try {
+    const response = await authApi.post("/auth/login", { email, password });
+    const payload = response.data.data || response.data;
 
-  if (email !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) {
-    throw new Error("Use the demo credentials shown below the form.");
+    if (payload?.user) {
+      return payload.user as AuthUser;
+    }
+
+    if (payload?.id && payload?.email) {
+      return payload as AuthUser;
+    }
+
+    throw new Error("Reponse de connexion invalide.");
+  } catch (error) {
+    throw new Error(getErrorMessage(error, "Connexion impossible."));
+  }
+}
+
+export async function logoutAdmin() {
+  try {
+    await authApi.post("/auth/logout", {});
+  } catch {
+    // The app clears local session state even if the server cookie has already expired.
+  }
+}
+
+export function getUserInitials(name?: string) {
+  if (!name) {
+    return "AD";
   }
 
-  setAuthToken("preview-session-token");
-  return {
-    email,
-    token: "preview-session-token"
-  };
+  const parts = name
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (parts.length === 0) {
+    return "AD";
+  }
+
+  if (parts.length === 1) {
+    return parts[0].slice(0, 2).toUpperCase();
+  }
+
+  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
 }
 
-export function logoutAdmin() {
-  clearAuthToken();
+export function getRoleLabel(role?: AuthUser["role"]) {
+  if (role === "SUPER_ADMIN") {
+    return "Super administrateur";
+  }
+
+  if (role === "ADMIN") {
+    return "Administrateur";
+  }
+
+  return "Administrateur";
 }
 
-export const previewCredentials = {
-  email: ADMIN_EMAIL,
-  password: ADMIN_PASSWORD
+export const demoCredentials = {
+  email: "admin@kayak-en-re.fr",
+  password: "Admin@K-Re2026!"
 };
-

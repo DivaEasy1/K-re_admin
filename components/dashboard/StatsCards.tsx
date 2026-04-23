@@ -23,30 +23,30 @@ export function StatsCards({
 }: StatsCardsProps) {
   const cards = [
     {
-      label: "Total Stations",
+      label: "Total stations",
       value: totalStations,
-      helper: `${openStations} open | ${comingSoonStations} coming soon`,
+      helper: `${openStations} ouvertes | ${comingSoonStations} a venir`,
       icon: MapPinned,
       highlight: false
     },
     {
-      label: "Total Activities",
+      label: "Total activites",
       value: totalActivities,
-      helper: "Experiences currently visible in the catalog",
+      helper: "Experiences actuellement visibles dans le catalogue",
       icon: Waves,
       highlight: false
     },
     {
-      label: "Unread Messages",
+      label: "Messages non lus",
       value: unreadMessages,
-      helper: unreadMessages > 0 ? "Needs attention from the team" : "Inbox is under control",
+      helper: unreadMessages > 0 ? "Une reponse de l'equipe est attendue" : "La boite de reception est a jour",
       icon: Inbox,
       highlight: unreadMessages > 0
     },
     {
-      label: "Last Login",
+      label: "Derniere connexion",
       value: formatDateTime(lastLogin),
-      helper: "Latest authenticated session",
+      helper: "Derniere session authentifiee",
       icon: CalendarClock,
       highlight: false
     }
@@ -73,7 +73,7 @@ export function StatsCards({
           </div>
           {card.highlight ? (
             <div className="mt-3">
-              <Badge variant="destructive">Priority inbox</Badge>
+              <Badge variant="destructive">Boite prioritaire</Badge>
             </div>
           ) : null}
         </Card>

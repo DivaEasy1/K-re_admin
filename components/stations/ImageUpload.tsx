@@ -8,10 +8,12 @@ import { cn } from "@/lib/utils";
 
 interface ImageUploadProps {
   value?: string;
-  onChange: (value: string) => void;
+  onChange?: (value: string) => void;
+  onFileSelect?: (file: File | null, previewUrl: string) => void;
+  mode?: "data-url" | "file";
 }
 
-export function ImageUpload({ value, onChange }: ImageUploadProps) {
+export function ImageUpload({ value, onChange, onFileSelect, mode = "data-url" }: ImageUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
 
@@ -20,10 +22,15 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
       return;
     }
 
+    if (mode === "file") {
+      onFileSelect?.(file, URL.createObjectURL(file));
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = () => {
       if (typeof reader.result === "string") {
-        onChange(reader.result);
+        onChange?.(reader.result);
       }
     };
     reader.readAsDataURL(file);

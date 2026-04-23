@@ -22,6 +22,12 @@ function getStatusVariant(status: StationStatus) {
   return "destructive";
 }
 
+function getStatusLabel(status: StationStatus) {
+  if (status === "OPEN") return "Ouverte";
+  if (status === "COMING_SOON") return "Bientot";
+  return "Fermee";
+}
+
 export function StationsTable() {
   const { data, isLoading } = useStations();
   const deleteStation = useDeleteStation();
@@ -43,23 +49,23 @@ export function StationsTable() {
     <>
       <DataTable
         title="Stations"
-        description="Search, filter, and manage the current network of launch points."
+        description="Recherchez, filtrez et gerez le reseau actuel des points de depart."
         toolbar={
           <div className="flex w-full flex-col gap-3 lg:w-auto lg:flex-row">
             <div className="relative min-w-[220px]">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-              <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search by station name" className="pl-9" />
+              <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Rechercher une station" className="pl-9" />
             </div>
             <Select value={status} onChange={(event) => setStatus(event.target.value as StationStatus | "ALL")}>
-              <option value="ALL">All statuses</option>
-              <option value="OPEN">OPEN</option>
-              <option value="COMING_SOON">COMING_SOON</option>
-              <option value="CLOSED">CLOSED</option>
+              <option value="ALL">Tous les statuts</option>
+              <option value="OPEN">Ouverte</option>
+              <option value="COMING_SOON">Bientot</option>
+              <option value="CLOSED">Fermee</option>
             </Select>
             <Button asChild>
               <Link href="/stations/new">
                 <Plus className="h-4 w-4" />
-                Add Station
+                Ajouter une station
               </Link>
             </Button>
           </div>
@@ -74,9 +80,9 @@ export function StationsTable() {
         ) : filteredStations.length === 0 ? (
           <div className="p-6">
             <EmptyState
-              title="No stations match your filters"
-              description="Try another search or create a fresh station draft to populate the network."
-              actionLabel="Create station"
+              title="Aucune station ne correspond aux filtres"
+              description="Essayez une autre recherche ou creez une nouvelle station."
+              actionLabel="Creer une station"
               actionHref="/stations/new"
             />
           </div>
@@ -85,10 +91,10 @@ export function StationsTable() {
             <thead className="bg-slate-50/80 text-[10px] uppercase tracking-[0.12em] text-muted-foreground dark:bg-slate-900/30">
               <tr>
                 <th className="px-4 py-2.5">Image</th>
-                <th className="px-4 py-2.5">Name</th>
-                <th className="px-4 py-2.5">Location</th>
-                <th className="px-4 py-2.5">Status</th>
-                <th className="px-4 py-2.5">Open Year</th>
+                <th className="px-4 py-2.5">Nom</th>
+                <th className="px-4 py-2.5">Lieu</th>
+                <th className="px-4 py-2.5">Statut</th>
+                <th className="px-4 py-2.5">Annee</th>
                 <th className="px-4 py-2.5 text-right">Actions</th>
               </tr>
             </thead>
@@ -103,17 +109,17 @@ export function StationsTable() {
                   <td className="px-4 py-2.5 font-semibold">{station.name}</td>
                   <td className="px-4 py-2.5 text-muted-foreground">{station.location}</td>
                   <td className="px-4 py-2.5">
-                    <Badge variant={getStatusVariant(station.status)}>{station.status.replace("_", " ")}</Badge>
+                    <Badge variant={getStatusVariant(station.status)}>{getStatusLabel(station.status)}</Badge>
                   </td>
                   <td className="px-4 py-2.5">{station.openYear}</td>
                   <td className="px-4 py-2.5">
                     <div className="flex justify-end gap-1.5">
                       <Button variant="outline" asChild>
-                        <Link href={`/stations/${station.id}`}>Edit</Link>
+                        <Link href={`/stations/${station.id}`}>Modifier</Link>
                       </Button>
                       <Button variant="ghost" className="text-red-500 hover:bg-red-500/10 hover:text-red-600" onClick={() => setSelectedId(station.id)}>
                         <Trash2 className="h-4 w-4" />
-                        Delete
+                        Supprimer
                       </Button>
                     </div>
                   </td>
@@ -131,9 +137,9 @@ export function StationsTable() {
             setSelectedId(null);
           }
         }}
-        title="Delete station?"
-        description="This removes the station from the preview data set. You can still recreate it later."
-        confirmLabel="Delete station"
+        title="Supprimer cette station ?"
+        description="La station sera retiree des donnees d'aperçu."
+        confirmLabel="Supprimer la station"
         destructive
         loading={deleteStation.isPending}
         onConfirm={async () => {

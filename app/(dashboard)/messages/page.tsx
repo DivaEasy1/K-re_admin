@@ -22,6 +22,12 @@ function getMessageBadge(status: MessageStatus) {
   return "default";
 }
 
+function getMessageStatusLabel(status: MessageStatus) {
+  if (status === "NEW") return "Nouveau";
+  if (status === "REPLIED") return "Traite";
+  return "Archive";
+}
+
 export default function MessagesPage() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<MessageStatus | "ALL">("ALL");
@@ -38,18 +44,18 @@ export default function MessagesPage() {
     <>
       <DataTable
         title="Messages"
-        description="Track every guest inquiry, archive resolved threads, and keep the inbox tidy."
+        description="Suivez chaque demande client et gardez la boite de reception organisee."
         toolbar={
           <div className="flex w-full flex-col gap-3 lg:w-auto lg:flex-row">
             <div className="relative min-w-[220px]">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-              <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search messages" className="pl-9" />
+              <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Rechercher un message" className="pl-9" />
             </div>
             <Select value={status} onChange={(event) => setStatus(event.target.value as MessageStatus | "ALL")}>
-              <option value="ALL">All statuses</option>
-              <option value="NEW">NEW</option>
-              <option value="REPLIED">REPLIED</option>
-              <option value="ARCHIVED">ARCHIVED</option>
+              <option value="ALL">Tous les statuts</option>
+              <option value="NEW">Nouveau</option>
+              <option value="REPLIED">Traite</option>
+              <option value="ARCHIVED">Archive</option>
             </Select>
           </div>
         }
@@ -63,20 +69,20 @@ export default function MessagesPage() {
         ) : filteredMessages.length === 0 ? (
           <div className="p-4">
             <EmptyState
-              title="No messages here yet"
-              description="Once guest requests start flowing, this view will help you triage them quickly."
-              icon="Mail"
+              title="Aucun message pour le moment"
+              description="Les demandes clients apparaitront ici pour etre traitees rapidement."
+              icon="MSG"
             />
           </div>
         ) : (
           <table className="min-w-full text-left text-xs">
             <thead className="bg-slate-50/80 text-[10px] uppercase tracking-[0.12em] text-muted-foreground dark:bg-slate-900/30">
               <tr>
-                <th className="px-4 py-2.5">Name</th>
-                <th className="px-4 py-2.5">Email</th>
-                <th className="px-4 py-2.5">Subject</th>
+                <th className="px-4 py-2.5">Nom</th>
+                <th className="px-4 py-2.5">E-mail</th>
+                <th className="px-4 py-2.5">Objet</th>
                 <th className="px-4 py-2.5">Date</th>
-                <th className="px-4 py-2.5">Status</th>
+                <th className="px-4 py-2.5">Statut</th>
                 <th className="px-4 py-2.5 text-right">Actions</th>
               </tr>
             </thead>
@@ -88,12 +94,12 @@ export default function MessagesPage() {
                   <td className="px-4 py-2.5">{message.subject}</td>
                   <td className="px-4 py-2.5 text-muted-foreground">{formatDate(message.date)}</td>
                   <td className="px-4 py-2.5">
-                    <Badge variant={getMessageBadge(message.status)}>{message.status}</Badge>
+                    <Badge variant={getMessageBadge(message.status)}>{getMessageStatusLabel(message.status)}</Badge>
                   </td>
                   <td className="px-4 py-2.5">
                     <div className="flex justify-end gap-1.5">
                       <Button variant="outline" asChild>
-                        <Link href={`/messages/${message.id}`}>View</Link>
+                        <Link href={`/messages/${message.id}`}>Voir</Link>
                       </Button>
                       <Button
                         variant="ghost"
@@ -101,7 +107,7 @@ export default function MessagesPage() {
                         className="text-slate-600 hover:bg-slate-900/5 hover:text-slate-950 dark:text-slate-200 dark:hover:bg-white/10"
                       >
                         <Archive className="h-4 w-4" />
-                        Archive
+                        Archiver
                       </Button>
                       <Button
                         variant="ghost"
@@ -109,7 +115,7 @@ export default function MessagesPage() {
                         onClick={() => setSelectedId(message.id)}
                       >
                         <Trash2 className="h-4 w-4" />
-                        Delete
+                        Supprimer
                       </Button>
                     </div>
                   </td>
@@ -127,9 +133,9 @@ export default function MessagesPage() {
             setSelectedId(null);
           }
         }}
-        title="Delete message?"
-        description="This removes the message from the preview inbox."
-        confirmLabel="Delete message"
+        title="Supprimer ce message ?"
+        description="Le message sera retire de la boite de reception d'aperçu."
+        confirmLabel="Supprimer le message"
         destructive
         loading={deleteMessage.isPending}
         onConfirm={async () => {

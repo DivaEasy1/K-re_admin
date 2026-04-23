@@ -39,7 +39,7 @@ export function useCreateStation() {
   return useMutation({
     mutationFn: (payload: Omit<Station, "id">) => createStation(payload),
     onSuccess: async () => {
-      toast.success("Station created successfully.");
+      toast.success("Station creee avec succes.");
       await queryClient.invalidateQueries({ queryKey: stationKeys.all });
     },
     onError: (error: Error) => {
@@ -55,7 +55,7 @@ export function useUpdateStation() {
     mutationFn: ({ id, values }: { id: string; values: Omit<Station, "id"> }) =>
       updateStation(id, values),
     onSuccess: async (_, variables) => {
-      toast.success("Station updated successfully.");
+      toast.success("Station mise a jour.");
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: stationKeys.all }),
         queryClient.invalidateQueries({ queryKey: stationKeys.detail(variables.id) })
@@ -73,7 +73,7 @@ export function useDeleteStation() {
   return useMutation({
     mutationFn: (id: string) => deleteStation(id),
     onSuccess: async () => {
-      toast.success("Station deleted.");
+      toast.success("Station supprimee.");
       await queryClient.invalidateQueries({ queryKey: stationKeys.all });
     },
     onError: (error: Error) => {
@@ -88,7 +88,7 @@ export function useUploadStationImage() {
   return useMutation({
     mutationFn: ({ id, image }: { id: string; image: string }) => uploadStationImage(id, image),
     onSuccess: async (_, variables) => {
-      toast.success("Station image updated.");
+      toast.success("Image de la station mise a jour.");
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: stationKeys.all }),
         queryClient.invalidateQueries({ queryKey: stationKeys.detail(variables.id) })

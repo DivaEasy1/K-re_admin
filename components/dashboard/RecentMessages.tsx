@@ -11,18 +11,24 @@ interface RecentMessagesProps {
   messages: Message[];
 }
 
+function getStatusLabel(status: Message["status"]) {
+  if (status === "NEW") return "Nouveau";
+  if (status === "REPLIED") return "Traite";
+  return "Archive";
+}
+
 export function RecentMessages({ messages }: RecentMessagesProps) {
   return (
     <Card className="overflow-hidden p-0">
       <CardHeader className="border-b border-border/70 px-4 py-3">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <CardTitle>Recent Messages</CardTitle>
-            <CardDescription>Latest guest requests that may need a fast reply.</CardDescription>
+            <CardTitle>Messages recents</CardTitle>
+            <CardDescription>Dernieres demandes clients pouvant necessiter une reponse rapide.</CardDescription>
           </div>
           <Button variant="outline" asChild>
             <Link href="/messages">
-              View all
+              Voir tout
               <ArrowUpRight className="h-4 w-4" />
             </Link>
           </Button>
@@ -32,10 +38,10 @@ export function RecentMessages({ messages }: RecentMessagesProps) {
         <table className="min-w-full text-left text-xs">
           <thead className="bg-slate-50/80 text-[10px] uppercase tracking-[0.12em] text-muted-foreground dark:bg-slate-900/30">
             <tr>
-              <th className="px-4 py-2.5">Name</th>
-              <th className="px-4 py-2.5">Subject</th>
+              <th className="px-4 py-2.5">Nom</th>
+              <th className="px-4 py-2.5">Objet</th>
               <th className="px-4 py-2.5">Date</th>
-              <th className="px-4 py-2.5">Status</th>
+              <th className="px-4 py-2.5">Statut</th>
             </tr>
           </thead>
           <tbody>
@@ -58,7 +64,7 @@ export function RecentMessages({ messages }: RecentMessagesProps) {
                           : "default"
                     }
                   >
-                    {message.status}
+                    {getStatusLabel(message.status)}
                   </Badge>
                 </td>
               </tr>

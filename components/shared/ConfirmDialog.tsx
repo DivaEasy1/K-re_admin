@@ -21,7 +21,7 @@ export function ConfirmDialog({
   onOpenChange,
   title,
   description,
-  confirmLabel = "Confirm",
+  confirmLabel = "Confirmer",
   destructive = false,
   onConfirm,
   loading
@@ -44,18 +44,17 @@ export function ConfirmDialog({
         </div>
         <div className="mt-8 flex justify-end gap-3">
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
-            Cancel
+            Annuler
           </Button>
           <Button
             variant={destructive ? "destructive" : "default"}
             onClick={() => void onConfirm()}
             disabled={loading}
           >
-            {loading ? "Please wait..." : confirmLabel}
+            {loading ? "Veuillez patienter..." : confirmLabel}
           </Button>
         </div>
       </Card>
     </div>
   );
 }
-

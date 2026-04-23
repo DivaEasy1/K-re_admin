@@ -23,12 +23,14 @@ export interface Activity {
   description: string;
   duration: string;
   difficulty: ActivityDifficulty;
-  price: string;
+  price: number;
+  priceLabel: string;
   icon: string;
-  category: ActivityCategory;
-  stationId: string;
-  stationName: string;
-  image: string;
+  category: string;
+  maxParticipants: number;
+  image?: string | null;
+  slug?: string;
+  isActive?: boolean;
 }
 
 export interface Message {
@@ -82,4 +84,3 @@ export interface AuditEntry {
   date: string;
   context: string;
 }
-

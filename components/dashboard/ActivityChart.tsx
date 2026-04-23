@@ -1,8 +1,6 @@
 "use client";
 
 import {
-  Area,
-  AreaChart,
   Bar,
   BarChart,
   CartesianGrid,
@@ -14,38 +12,65 @@ import {
 } from "recharts";
 
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { dashboardTrend, stationTraffic } from "@/lib/mock-data";
+import type { Activity } from "@/types";
 
-export function ActivityChart() {
+interface ActivityChartProps {
+  activities: Activity[];
+}
+
+const difficultyConfig = [
+  { key: "EASY", label: "Facile", color: "#10b981" },
+  { key: "MEDIUM", label: "Intermediaire", color: "#f59e0b" },
+  { key: "HARD", label: "Difficile", color: "#ef4444" }
+] as const;
+
+const categoryColors = ["#1E90FF", "#0ea5e9", "#38bdf8", "#7dd3fc", "#bae6fd"];
+
+function getCategoryLabel(category: string) {
+  if (category === "leisure") return "Loisir";
+  if (category === "nature") return "Nature";
+  if (category === "gastronomy") return "Gastronomie";
+  if (category === "sport") return "Sport";
+  return category;
+}
+
+export function ActivityChart({ activities }: ActivityChartProps) {
+  const difficultyData = difficultyConfig.map((difficulty) => ({
+    name: difficulty.label,
+    value: activities.filter((activity) => activity.difficulty === difficulty.key).length,
+    color: difficulty.color
+  }));
+
+  const categoryMap = new Map<string, number>();
+
+  activities.forEach((activity) => {
+    const current = categoryMap.get(activity.category) ?? 0;
+    categoryMap.set(activity.category, current + 1);
+  });
+
+  const categoryData = Array.from(categoryMap.entries()).map(([category, count], index) => ({
+    name: getCategoryLabel(category),
+    value: count,
+    color: categoryColors[index % categoryColors.length]
+  }));
+
   return (
     <div className="grid gap-3 xl:grid-cols-[1.4fr,1fr]">
       <Card className="overflow-hidden">
         <CardHeader className="flex flex-row items-start justify-between gap-3">
           <div>
-            <CardTitle>Performance Pulse</CardTitle>
-            <CardDescription>
-              Reservations and revenue momentum with a clean, finance-inspired visual rhythm.
-            </CardDescription>
+            <CardTitle>Repartition des activites</CardTitle>
+            <CardDescription>Vue en direct des activites en base par niveau de difficulte.</CardDescription>
           </div>
           <div className="rounded-full border border-border/70 bg-background/80 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-            Last 9 months
+            {activities.length} activites
           </div>
         </CardHeader>
         <div className="h-[250px] px-1 pb-1 sm:px-2">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={dashboardTrend} margin={{ left: 0, right: 12, top: 10, bottom: 2 }}>
-              <defs>
-                <linearGradient id="reservationsGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#1E90FF" stopOpacity={0.35} />
-                  <stop offset="100%" stopColor="#1E90FF" stopOpacity={0.02} />
-                </linearGradient>
-                <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#0ea5e9" stopOpacity={0.28} />
-                  <stop offset="100%" stopColor="#0ea5e9" stopOpacity={0.03} />
-                </linearGradient>
-              </defs>
+            <BarChart data={difficultyData} margin={{ left: 0, right: 12, top: 10, bottom: 2 }} barSize={34}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.18)" vertical={false} />
-              <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} fontSize={11} />
+              <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} fontSize={11} />
               <YAxis tickLine={false} axisLine={false} tickMargin={8} fontSize={11} />
               <Tooltip
                 contentStyle={{
@@ -55,37 +80,26 @@ export function ActivityChart() {
                   background: "rgba(255,255,255,0.92)"
                 }}
               />
-              <Area
-                type="monotone"
-                dataKey="reservations"
-                stroke="#1E90FF"
-                strokeWidth={2.2}
-                fill="url(#reservationsGradient)"
-                activeDot={{ r: 4 }}
-              />
-              <Area
-                type="monotone"
-                dataKey="revenue"
-                stroke="#0f71d0"
-                strokeWidth={1.8}
-                fill="url(#revenueGradient)"
-                activeDot={{ r: 3.5 }}
-              />
-            </AreaChart>
+              <Bar dataKey="value" radius={[12, 12, 6, 6]}>
+                {difficultyData.map((entry) => (
+                  <Cell key={entry.name} fill={entry.color} />
+                ))}
+              </Bar>
+            </BarChart>
           </ResponsiveContainer>
         </div>
       </Card>
 
       <Card className="overflow-hidden">
         <CardHeader>
-          <CardTitle>Station Momentum</CardTitle>
-          <CardDescription>Bookings by station paired with satisfaction score for quick comparison.</CardDescription>
+          <CardTitle>Categories d&apos;activites</CardTitle>
+          <CardDescription>Les categories sont calculees a partir des activites reelles du catalogue.</CardDescription>
         </CardHeader>
         <div className="h-[250px] px-1 pb-1 sm:px-2">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={stationTraffic} margin={{ left: 0, right: 8, top: 10, bottom: 2 }} barSize={18}>
+            <BarChart data={categoryData} margin={{ left: 0, right: 8, top: 10, bottom: 2 }} barSize={18}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.18)" vertical={false} />
-              <XAxis dataKey="station" tickLine={false} axisLine={false} tickMargin={8} interval={0} angle={-15} height={48} fontSize={11} />
+              <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} interval={0} angle={-15} height={48} fontSize={11} />
               <YAxis tickLine={false} axisLine={false} tickMargin={8} fontSize={11} />
               <Tooltip
                 contentStyle={{
@@ -95,12 +109,9 @@ export function ActivityChart() {
                   background: "rgba(255,255,255,0.92)"
                 }}
               />
-              <Bar dataKey="bookings" radius={[10, 10, 5, 5]}>
-                {stationTraffic.map((entry) => (
-                  <Cell
-                    key={entry.station}
-                    fill={entry.station === "Lagoon Bay" ? "#1E90FF" : "rgba(30, 144, 255, 0.35)"}
-                  />
+              <Bar dataKey="value" radius={[10, 10, 5, 5]}>
+                {categoryData.map((entry) => (
+                  <Cell key={entry.name} fill={entry.color} />
                 ))}
               </Bar>
             </BarChart>

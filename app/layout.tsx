@@ -17,16 +17,15 @@ const fontDisplay = Sora({
 
 export const metadata: Metadata = {
   title: "K-RE Admin",
-  description: "Professional admin dashboard for stations, activities, and guest messages."
+  description: "Tableau de bord d'administration pour les stations, activites et messages clients."
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="fr" suppressHydrationWarning>
       <body className={`${fontSans.variable} ${fontDisplay.variable}`}>
         <AppProviders>{children}</AppProviders>
       </body>
     </html>
   );
 }
-

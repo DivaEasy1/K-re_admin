@@ -12,17 +12,11 @@ interface EmptyStateProps {
   icon?: string;
 }
 
-export function EmptyState({
-  title,
-  description,
-  actionLabel,
-  actionHref,
-  icon = "🌊"
-}: EmptyStateProps) {
+export function EmptyState({ title, description, actionLabel, actionHref, icon = "..." }: EmptyStateProps) {
   return (
     <Card className="panel-grid border-dashed">
       <CardHeader className="items-center text-center">
-        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-4xl">
+        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-2xl font-semibold text-primary">
           {icon}
         </div>
         <CardTitle>{title}</CardTitle>
@@ -41,4 +35,3 @@ export function EmptyState({
     </Card>
   );
 }
-
