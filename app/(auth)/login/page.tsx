@@ -66,28 +66,28 @@ export default function LoginPage() {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <Card className="border-white/10 bg-white/8 p-5 text-white">
+            <Card className="border-white/18 bg-white p-5 text-slate-900 shadow-xl shadow-slate-950/10">
               <div className="flex items-start gap-3">
-                <div className="mt-0.5 flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-sky-200">
+                <div className="mt-0.5 flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-100 text-sky-600">
                   <Waves className="h-5 w-5" />
                 </div>
                 <div className="space-y-1.5">
-                  <p className="font-display text-lg font-semibold">Tableau de bord premium</p>
-                  <p className="text-sm leading-6 text-slate-300">
+                  <p className="font-display text-lg font-semibold text-slate-900">Tableau de bord premium</p>
+                  <p className="text-sm leading-6 text-slate-600">
                     Une interface nette pour suivre les activites et les operations.
                   </p>
                 </div>
               </div>
             </Card>
 
-            <Card className="border-white/10 bg-white/8 p-5 text-white">
+            <Card className="border-white/18 bg-white p-5 text-slate-900 shadow-xl shadow-slate-950/10">
               <div className="flex items-start gap-3">
-                <div className="mt-0.5 flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-sky-200">
+                <div className="mt-0.5 flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-100 text-sky-600">
                   <ShieldCheck className="h-5 w-5" />
                 </div>
                 <div className="space-y-1.5">
-                  <p className="font-display text-lg font-semibold">Session securisee</p>
-                  <p className="text-sm leading-6 text-slate-300">
+                  <p className="font-display text-lg font-semibold text-slate-900">Session securisee</p>
+                  <p className="text-sm leading-6 text-slate-600">
                     Authentification admin avec cookies HTTP-only et renouvellement de session.
                   </p>
                 </div>

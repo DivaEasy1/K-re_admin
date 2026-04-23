@@ -82,20 +82,20 @@ function ActivityStatusSwitch({
       onClick={onToggle}
       disabled={loading}
       aria-pressed={isActive}
-      className={`relative inline-flex h-10 w-[74px] items-center rounded-full border-2 px-1 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60 ${
+      className={`relative inline-flex h-8 w-[58px] items-center rounded-full border-2 px-1 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60 ${
         isActive
           ? "border-violet-500 bg-violet-500/15 shadow-[0_0_24px_rgba(139,92,246,0.28)]"
           : "border-violet-300/60 bg-violet-200/20"
       }`}
     >
       <span
-        className={`absolute flex h-8 w-8 items-center justify-center rounded-full transition-all duration-300 ${
+        className={`absolute flex h-6 w-6 items-center justify-center rounded-full transition-all duration-300 ${
           isActive
-            ? "left-[calc(100%-2.35rem)] bg-white text-violet-600 shadow-lg"
+            ? "left-[calc(100%-1.8rem)] bg-white text-violet-600 shadow-lg"
             : "left-1 bg-violet-300/70 text-violet-50"
         }`}
       >
-        {isActive ? <Check className="h-4 w-4" /> : <X className="h-4 w-4" />}
+        {isActive ? <Check className="h-3.5 w-3.5" /> : <X className="h-3.5 w-3.5" />}
       </span>
     </button>
   );
@@ -196,7 +196,7 @@ export function ActivitiesTable() {
                   <th className="px-4 py-2.5">Duree</th>
                   <th className="px-4 py-2.5">Tarif</th>
                   <th className="px-4 py-2.5">Capacite</th>
-                  <th className="px-4 py-2.5 text-right">Actions</th>
+                  <th className="px-4 py-2.5 text-center">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -228,7 +228,7 @@ export function ActivitiesTable() {
                       </span>
                     </td>
                     <td className="px-4 py-2.5">
-                      <div className="flex justify-end gap-2">
+                      <div className="flex items-center justify-center gap-2">
                         <ActivityStatusSwitch
                           isActive={activity.isActive}
                           loading={toggleActivityStatus.isPending && toggleActivityStatus.variables?.id === activity.id}
@@ -239,12 +239,13 @@ export function ActivitiesTable() {
                             })
                           }
                         />
-                        <Button variant="outline" asChild>
+                        <Button variant="outline" size="sm" asChild>
                           <Link href={`/activities/${activity.id}`}>Modifier</Link>
                         </Button>
                         <Button
                           variant="destructive"
-                          className="text-red-500 hover:bg-red-500/10 hover:text-red-600"
+                          size="sm"
+                          className="min-w-[92px] text-white hover:text-white"
                           onClick={() => setSelectedId(activity.id)}
                         >
                           <Trash2 className="h-4 w-4" />
