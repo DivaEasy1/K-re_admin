@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { demoCredentials } from "@/lib/auth";
 
 const loginSchema = z.object({
   email: z.string().email("Veuillez saisir une adresse e-mail valide."),
@@ -28,7 +27,10 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
-    defaultValues: demoCredentials
+    defaultValues: {
+      email: "",
+      password: ""
+    }
   });
 
   const onSubmit = async (values: LoginFormValues) => {
@@ -160,12 +162,6 @@ export default function LoginPage() {
               {form.formState.isSubmitting ? "Connexion en cours..." : "Acceder au tableau de bord"}
             </Button>
           </form>
-
-          <div className="mt-6 rounded-[24px] border border-white/10 bg-white/5 p-4 text-sm text-slate-300">
-            <p className="font-semibold text-white">Identifiants de demonstration</p>
-            <p className="mt-2 break-all">{demoCredentials.email}</p>
-            <p>{demoCredentials.password}</p>
-          </div>
         </Card>
       </div>
     </main>

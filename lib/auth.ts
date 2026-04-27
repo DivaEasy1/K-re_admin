@@ -120,8 +120,3 @@ export function getRoleLabel(role?: AuthUser["role"]) {
 
   return "Administrateur";
 }
-
-export const demoCredentials = {
-  email: "admin@kayak-en-re.fr",
-  password: "Admin@K-Re2026!"
-};
