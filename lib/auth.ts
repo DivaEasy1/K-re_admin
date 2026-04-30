@@ -1,4 +1,5 @@
 import axios from "axios";
+import { api, clearCSRFToken } from "@/lib/api";
 
 export interface AuthUser {
   id: string;
@@ -7,11 +8,6 @@ export interface AuthUser {
   role: "ADMIN" | "SUPER_ADMIN";
   lastLoginAt?: string | null;
 }
-
-const authApi = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
-  withCredentials: true
-});
 
 function getErrorMessage(error: unknown, fallback: string) {
   if (axios.isAxiosError(error)) {
@@ -26,13 +22,13 @@ function getErrorMessage(error: unknown, fallback: string) {
 }
 
 async function requestCurrentAdmin() {
-  const response = await authApi.get("/auth/me");
+  const response = await api.get("/auth/me");
   return (response.data.data || response.data) as AuthUser;
 }
 
 export async function refreshAuthToken() {
   try {
-    await authApi.post("/auth/refresh", {});
+    await api.post("/auth/refresh", {});
     return true;
   } catch {
     return false;
@@ -63,7 +59,8 @@ export async function getCurrentAdmin() {
 
 export async function loginAdmin(email: string, password: string) {
   try {
-    const response = await authApi.post("/auth/login", { email, password });
+    clearCSRFToken();
+    const response = await api.post("/auth/login", { email, password });
     const payload = response.data.data || response.data;
 
     if (payload?.user) {
@@ -82,9 +79,11 @@ export async function loginAdmin(email: string, password: string) {
 
 export async function logoutAdmin() {
   try {
-    await authApi.post("/auth/logout", {});
+    await api.post("/auth/logout", {});
   } catch {
     // The app clears local session state even if the server cookie has already expired.
+  } finally {
+    clearCSRFToken();
   }
 }
 
