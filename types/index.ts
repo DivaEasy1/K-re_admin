@@ -1,20 +1,34 @@
-export type StationStatus = "OPEN" | "COMING_SOON" | "CLOSED";
+export type StationStatus = "OPEN" | "COMING_SOON" | "CLOSED" | "MAINTENANCE";
 export type ActivityDifficulty = "EASY" | "MEDIUM" | "HARD";
 export type ActivityCategory = "leisure" | "nature" | "gastronomy" | "sport";
 export type MessageStatus = "NEW" | "REPLIED" | "ARCHIVED";
 export type EquipmentType = "kayak_solo" | "kayak_tandem" | "paddle";
 
+export interface StationImage {
+  id: string;
+  url: string;
+  alt: string;
+  position: number;
+  createdAt?: string;
+}
+
 export interface Station {
   id: string;
   name: string;
+  slug?: string;
   location: string;
-  latitude: number;
-  longitude: number;
+  lat: number;
+  lng: number;
   status: StationStatus;
-  openYear: number;
+  openYear?: number | null;
   description: string;
-  equipment: EquipmentType[];
-  image: string;
+  richContent?: string | null;
+  image?: string | null;
+  imagePublicId?: string | null;
+  gallery: StationImage[];
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Activity {

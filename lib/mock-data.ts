@@ -11,56 +11,7 @@ import type {
 } from "@/types";
 import { cloneData, wait } from "@/lib/utils";
 
-let stations: Station[] = [
-  {
-    id: "st-01",
-    name: "Lagoon Bay",
-    location: "Marina Atlantique de Dakhla",
-    latitude: 23.7162,
-    longitude: -15.9361,
-    status: "OPEN",
-    openYear: 2022,
-    description: "Station lagon principale avec services premium, casiers et departs matinaux.",
-    equipment: ["kayak_solo", "kayak_tandem", "paddle"],
-    image: "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1200&q=80"
-  },
-  {
-    id: "st-02",
-    name: "Cliffside Dock",
-    location: "Point Vent d'Essaouira",
-    latitude: 31.5085,
-    longitude: -9.7595,
-    status: "OPEN",
-    openYear: 2023,
-    description: "Station cotiere orientee sport avec parcours guides et offres dynamiques.",
-    equipment: ["kayak_solo", "paddle"],
-    image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80"
-  },
-  {
-    id: "st-03",
-    name: "Blue Haven",
-    location: "Front de mer d'Al Hoceima",
-    latitude: 35.2493,
-    longitude: -3.9371,
-    status: "COMING_SOON",
-    openYear: 2026,
-    description: "Nouvelle implantation mediterraneenne pensee pour les familles et les sorties douces.",
-    equipment: ["kayak_tandem", "paddle"],
-    image: "https://images.unsplash.com/photo-1493558103817-58b2924bce98?auto=format&fit=crop&w=1200&q=80"
-  },
-  {
-    id: "st-04",
-    name: "Palm Harbor",
-    location: "Baie d'Agadir",
-    latitude: 30.4278,
-    longitude: -9.5981,
-    status: "CLOSED",
-    openYear: 2021,
-    description: "Base saisonniere en maintenance pendant la mise a niveau des operations.",
-    equipment: ["kayak_solo", "kayak_tandem"],
-    image: "https://images.unsplash.com/photo-1473116763249-2faaef81ccda?auto=format&fit=crop&w=1200&q=80"
-  }
-];
+let stations: Station[] = [];
 
 let activities: Activity[] = [
   {

@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 
-import { adminProfile, getDashboardStats } from "@/lib/mock-data";
-import type { Activity } from "@/types";
+import { adminProfile, getMessages } from "@/lib/mock-data";
+import type { Activity, Station } from "@/types";
 
 interface ApiResponse<T> {
   success: boolean;
@@ -55,6 +55,15 @@ export async function getDashboardActivityData() {
   }
 }
 
+export async function getDashboardStationData() {
+  try {
+    const response = await fetchApi<Station[]>("/api/stations");
+    return response.data ?? [];
+  } catch {
+    return [];
+  }
+}
+
 export async function getDashboardAdminData() {
   try {
     const response = await fetchApi<DashboardAdmin>("/api/auth/me");
@@ -65,15 +74,26 @@ export async function getDashboardAdminData() {
 }
 
 export async function getDashboardViewModel() {
-  const [activities, admin] = await Promise.all([getDashboardActivityData(), getDashboardAdminData()]);
-  const mockStats = getDashboardStats();
+  const [activities, stations, admin, messages] = await Promise.all([
+    getDashboardActivityData(),
+    getDashboardStationData(),
+    getDashboardAdminData(),
+    getMessages()
+  ]);
+
+  const openStations = stations.filter((station) => station.status === "OPEN").length;
+  const comingSoonStations = stations.filter((station) => station.status === "COMING_SOON").length;
+  const unreadMessages = messages.filter((message) => message.status === "NEW").length;
 
   return {
     activities,
     stats: {
-      ...mockStats,
+      totalStations: stations.length,
+      openStations,
+      comingSoonStations,
       totalActivities: activities.length,
+      unreadMessages,
       lastLogin: admin?.lastLoginAt || adminProfile.lastLogin,
-    },
+    }
   };
 }

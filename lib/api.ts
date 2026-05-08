@@ -9,7 +9,7 @@ type RetryableRequest = InternalAxiosRequestConfig & {
 // CSRF token storage
 let csrfToken: string | null = null;
 
-const SKIP_REFRESH_PATHS = ["/auth/login", "/auth/logout", "/auth/refresh"];
+const SKIP_REFRESH_PATHS = ["/auth/login", "/auth/logout", "/auth/refresh", "/auth/csrf-token"];
 const SKIP_CSRF_PATHS = ["/auth/login"];
 const STATE_CHANGING_METHODS = ["POST", "PUT", "DELETE", "PATCH"];
 
@@ -21,9 +21,14 @@ function canRefresh(url?: string) {
   return !SKIP_REFRESH_PATHS.some((path) => url.includes(path));
 }
 
-export const api = axios.create({
+const apiConfig = {
   baseURL: process.env.NEXT_PUBLIC_API_URL,
   withCredentials: true,
+  timeout: 10000
+} as const;
+
+export const api = axios.create({
+  ...apiConfig,
 });
 
 async function getCSRFToken(): Promise<string | null> {
@@ -32,7 +37,8 @@ async function getCSRFToken(): Promise<string | null> {
   }
 
   try {
-    const response = await api.get("/auth/csrf-token");
+    // Use a plain client here to avoid auth refresh recursion when the session is expired.
+    const response = await axios.get("/auth/csrf-token", apiConfig);
     csrfToken = response.data.csrfToken;
     return csrfToken;
   } catch (error) {
