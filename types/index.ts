@@ -23,6 +23,7 @@ export interface Station {
   openYear?: number | null;
   description: string;
   richContent?: string | null;
+  equipment?: EquipmentType[] | null;
   image?: string | null;
   imagePublicId?: string | null;
   gallery: StationImage[];

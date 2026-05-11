@@ -18,7 +18,8 @@ type StationPayload = {
   lat: number;
   lng: number;
   description: string;
-  richContent?: string;
+  richContent?: string | null;
+  equipment?: Station["equipment"];
   status: Station["status"];
   openYear?: number | null;
   image?: string | null;
@@ -70,7 +71,6 @@ export function useCreateStation() {
     onSuccess: async (createdStation) => {
       queryClient.setQueryData<Station[]>(stationKeys.all, (current = []) => [createdStation, ...current]);
       queryClient.setQueryData<Station>(stationKeys.detail(createdStation.id), createdStation);
-      toast.success("Station creee avec succes.");
       await queryClient.invalidateQueries({ queryKey: stationKeys.all });
     },
     onError: (error: Error) => {

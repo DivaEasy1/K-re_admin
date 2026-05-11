@@ -6,6 +6,11 @@ type RetryableRequest = InternalAxiosRequestConfig & {
   _retry?: boolean;
 };
 
+type ApiValidationIssue = {
+  message?: string;
+  path?: unknown[];
+};
+
 // CSRF token storage
 let csrfToken: string | null = null;
 
@@ -19,6 +24,81 @@ function canRefresh(url?: string) {
   }
 
   return !SKIP_REFRESH_PATHS.some((path) => url.includes(path));
+}
+
+function formatIssuePath(path?: unknown[]) {
+  if (!Array.isArray(path) || path.length === 0) {
+    return "";
+  }
+
+  return path
+    .map((segment) => String(segment))
+    .filter(Boolean)
+    .join(".");
+}
+
+function formatValidationIssues(issues: ApiValidationIssue[]) {
+  const formatted = issues
+    .map((issue) => {
+      if (!issue || typeof issue !== "object") {
+        return "";
+      }
+
+      const message = typeof issue.message === "string" ? issue.message.trim() : "";
+      const fieldPath = formatIssuePath(issue.path);
+
+      if (!message) {
+        return "";
+      }
+
+      return fieldPath ? `${fieldPath}: ${message}` : message;
+    })
+    .filter(Boolean);
+
+  return formatted.length > 0 ? formatted.join(" ") : undefined;
+}
+
+function extractApiErrorMessage(payload: unknown): string | undefined {
+  if (!payload) {
+    return undefined;
+  }
+
+  if (typeof payload === "string") {
+    const trimmed = payload.trim();
+
+    if (!trimmed) {
+      return undefined;
+    }
+
+    if (
+      (trimmed.startsWith("[") && trimmed.endsWith("]")) ||
+      (trimmed.startsWith("{") && trimmed.endsWith("}"))
+    ) {
+      try {
+        return extractApiErrorMessage(JSON.parse(trimmed));
+      } catch {
+        return trimmed;
+      }
+    }
+
+    return trimmed;
+  }
+
+  if (Array.isArray(payload)) {
+    return formatValidationIssues(payload as ApiValidationIssue[]);
+  }
+
+  if (typeof payload === "object") {
+    const record = payload as Record<string, unknown>;
+
+    return (
+      extractApiErrorMessage(record.error) ??
+      extractApiErrorMessage(record.message) ??
+      extractApiErrorMessage(record.data)
+    );
+  }
+
+  return undefined;
 }
 
 const apiConfig = {
@@ -99,8 +179,7 @@ api.interceptors.response.use(
     }
 
     const message =
-      error.response?.data?.error ||
-      error.response?.data?.message ||
+      extractApiErrorMessage(error.response?.data) ||
       error.message ||
       "Une erreur API inattendue est survenue.";
 

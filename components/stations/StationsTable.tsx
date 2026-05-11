@@ -29,14 +29,23 @@ function getStatusLabel(status: string) {
   return "Fermee";
 }
 
-function StationImageCell({ name, image }: { name: string; image?: string | null }) {
+function StationImageCell({
+  name,
+  image,
+  fallbackImage
+}: {
+  name: string;
+  image?: string | null;
+  fallbackImage?: string | null;
+}) {
   const [hasError, setHasError] = useState(false);
+  const displayImage = image || fallbackImage || null;
 
   useEffect(() => {
     setHasError(false);
-  }, [image]);
+  }, [displayImage]);
 
-  if (!image || hasError) {
+  if (!displayImage || hasError) {
     return (
       <div className="flex h-10 w-16 items-center justify-center rounded bg-slate-100 text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground dark:bg-slate-800">
         Img
@@ -48,7 +57,7 @@ function StationImageCell({ name, image }: { name: string; image?: string | null
     <div className="flex h-10 w-16 items-center justify-center overflow-hidden rounded bg-slate-100 dark:bg-slate-800">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={image}
+        src={displayImage}
         alt={name}
         className="h-full w-full object-cover"
         loading="lazy"
@@ -146,7 +155,11 @@ export function StationsTable() {
                 {filteredStations.map((station) => (
                   <tr key={station.id} className="border-t border-border/70 transition hover:bg-primary/5">
                     <td className="px-4 py-2.5">
-                      <StationImageCell name={station.name} image={station.image} />
+                      <StationImageCell
+                        name={station.name}
+                        image={station.image}
+                        fallbackImage={station.gallery?.[0]?.url ?? null}
+                      />
                     </td>
                     <td className="px-4 py-2.5 font-semibold">{station.name}</td>
                     <td className="px-4 py-2.5 text-muted-foreground">{station.location}</td>

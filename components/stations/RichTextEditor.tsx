@@ -7,6 +7,7 @@ import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import {
   Bold,
+  Eraser,
   Heading1,
   Heading2,
   Italic,
@@ -37,6 +38,42 @@ interface ToolbarButtonProps {
   onClick: () => void;
 }
 
+const HTML_ENTITY_MAP: Record<string, string> = {
+  amp: "&",
+  lt: "<",
+  gt: ">",
+  quot: '"',
+  apos: "'",
+  "#039": "'",
+  nbsp: " "
+};
+
+function decodeHtmlEntities(value?: string | null) {
+  if (!value) {
+    return "";
+  }
+
+  return value.replace(/&(#x?[0-9a-f]+|[a-z]+);/gi, (match, entity) => {
+    const normalizedEntity = String(entity).toLowerCase();
+
+    if (normalizedEntity.startsWith("#x")) {
+      const codePoint = Number.parseInt(normalizedEntity.slice(2), 16);
+      return Number.isNaN(codePoint) ? match : String.fromCodePoint(codePoint);
+    }
+
+    if (normalizedEntity.startsWith("#")) {
+      const codePoint = Number.parseInt(normalizedEntity.slice(1), 10);
+      return Number.isNaN(codePoint) ? match : String.fromCodePoint(codePoint);
+    }
+
+    return HTML_ENTITY_MAP[normalizedEntity] ?? match;
+  });
+}
+
+function normalizeEditorValue(value?: string | null) {
+  return decodeHtmlEntities(value).trim();
+}
+
 function ToolbarButton({ icon: Icon, label, title, isActive, disabled, onClick }: ToolbarButtonProps) {
   return (
     <Button
@@ -47,7 +84,7 @@ function ToolbarButton({ icon: Icon, label, title, isActive, disabled, onClick }
       disabled={disabled}
       className={cn(
         "h-9 min-w-9 rounded-xl border border-transparent px-2.5 text-slate-600 hover:border-slate-200 hover:bg-white hover:text-slate-900",
-        isActive && "border-ocean-200 bg-white text-ocean-700 shadow-sm"
+        isActive && "border-blue-200 bg-blue-50 text-blue-700 shadow-sm"
       )}
       title={title}
       aria-label={label}
@@ -58,6 +95,8 @@ function ToolbarButton({ icon: Icon, label, title, isActive, disabled, onClick }
 }
 
 export function RichTextEditor({ value, onChange, label }: RichTextEditorProps) {
+  const normalizedValue = normalizeEditorValue(value);
+
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -79,11 +118,11 @@ export function RichTextEditor({ value, onChange, label }: RichTextEditorProps) 
       }),
       Underline
     ],
-    content: value || "",
+    content: normalizedValue,
     editorProps: {
       attributes: {
         class:
-          "min-h-[320px] px-5 py-4 text-sm leading-7 text-slate-700 outline-none"
+          "min-h-[380px] px-5 py-4 text-base leading-7 text-slate-700 outline-none focus:ring-0"
       }
     },
     onUpdate: ({ editor: currentEditor }) => {
@@ -96,7 +135,15 @@ export function RichTextEditor({ value, onChange, label }: RichTextEditorProps) 
       return;
     }
 
-    const nextValue = value || "";
+    const nextValue = normalizeEditorValue(value);
+
+    if (!nextValue) {
+      if (!editor.isEmpty) {
+        editor.commands.clearContent(false);
+      }
+
+      return;
+    }
 
     if (editor.getHTML() !== nextValue) {
       editor.commands.setContent(nextValue, { emitUpdate: false });
@@ -114,8 +161,8 @@ export function RichTextEditor({ value, onChange, label }: RichTextEditorProps) 
     <div className="space-y-3">
       {label ? <label className="block text-sm font-medium text-slate-700">{label}</label> : null}
 
-      <div className="overflow-hidden rounded-[1.25rem] border border-slate-200 bg-white shadow-soft">
-        <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 bg-slate-50/80 px-3 py-3">
+      <div className="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white shadow-md">
+        <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-blue-50/50 px-4 py-4">
           <ToolbarButton
             icon={Bold}
             label="Gras"
@@ -138,7 +185,7 @@ export function RichTextEditor({ value, onChange, label }: RichTextEditorProps) 
             onClick={() => editor.chain().focus().toggleUnderline().run()}
           />
 
-          <div className="mx-1 h-8 w-px bg-slate-200" />
+          <div className="mx-1 h-8 w-px bg-slate-300" />
 
           <ToolbarButton
             icon={Pilcrow}
@@ -162,7 +209,7 @@ export function RichTextEditor({ value, onChange, label }: RichTextEditorProps) 
             onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
           />
 
-          <div className="mx-1 h-8 w-px bg-slate-200" />
+          <div className="mx-1 h-8 w-px bg-slate-300" />
 
           <ToolbarButton
             icon={List}
@@ -185,8 +232,15 @@ export function RichTextEditor({ value, onChange, label }: RichTextEditorProps) 
             isActive={editor.isActive("blockquote")}
             onClick={() => editor.chain().focus().toggleBlockquote().run()}
           />
+          <ToolbarButton
+            icon={Eraser}
+            label="Nettoyer"
+            title="Effacer la mise en forme"
+            disabled={editor.isEmpty}
+            onClick={() => editor.chain().focus().clearNodes().unsetAllMarks().run()}
+          />
 
-          <div className="mx-1 h-8 w-px bg-slate-200" />
+          <div className="mx-1 h-8 w-px bg-slate-300" />
 
           <ToolbarButton
             icon={Undo2}
@@ -206,7 +260,7 @@ export function RichTextEditor({ value, onChange, label }: RichTextEditorProps) 
 
         <div className="relative bg-white">
           {editor.isEmpty ? (
-            <p className="pointer-events-none absolute left-5 top-4 max-w-md text-sm leading-7 text-slate-400">
+            <p className="pointer-events-none absolute left-5 top-4 max-w-lg text-sm leading-7 text-slate-400">
               Ajoutez une presentation detaillee, des points forts, des conseils pratiques ou une mise en contexte pour la station.
             </p>
           ) : null}
@@ -214,9 +268,9 @@ export function RichTextEditor({ value, onChange, label }: RichTextEditorProps) 
           <EditorContent editor={editor} className="rich-text-editor" />
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 bg-slate-50/70 px-4 py-3 text-xs text-slate-500">
-          <p>Astuce: utilisez les titres pour structurer et les listes pour faire ressortir les infos utiles.</p>
-          <p>{wordCount} mot{wordCount > 1 ? "s" : ""}</p>
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 bg-gradient-to-r from-slate-50 to-blue-50/50 px-4 py-3 text-xs text-slate-500">
+          <p>Astuce: utilisez les titres, les citations et les listes pour rendre la page plus lisible.</p>
+          <p className="font-medium text-slate-600">{wordCount} mot{wordCount > 1 ? "s" : ""}</p>
         </div>
       </div>
     </div>

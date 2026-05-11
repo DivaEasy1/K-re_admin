@@ -23,12 +23,13 @@ import { resolveApiAssetUrl } from "@/lib/media";
 import type { StationImage, StationStatus } from "@/types";
 
 const stationSchema = z.object({
-  name: z.string().min(2, "Le nom est requis."),
-  location: z.string().min(2, "La localisation est requise."),
+  name: z.string().trim().min(2, "Le nom est requis."),
+  location: z.string().trim().min(2, "La localisation est requise."),
   lat: z.coerce.number().min(-90).max(90, "Latitude invalide."),
   lng: z.coerce.number().min(-180).max(180, "Longitude invalide."),
-  description: z.string().min(10, "La description est trop courte."),
+  description: z.string().trim().min(10, "La description est trop courte."),
   richContent: z.string().optional(),
+  equipment: z.array(z.enum(["kayak_solo", "kayak_tandem", "paddle"])).optional(),
   status: z.enum(["OPEN", "COMING_SOON", "CLOSED", "MAINTENANCE"]),
   openYear: z.coerce.number().min(2020).max(2050).optional().nullable(),
   image: z.union([z.literal(""), z.string().url("Ajoutez une image valide.")]).optional().nullable()
@@ -40,14 +41,83 @@ interface StationFormProps {
   stationId?: string;
 }
 
+function toNumberOrFallback(value: unknown, fallback: number) {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    const normalized = Number(value);
+
+    if (Number.isFinite(normalized)) {
+      return normalized;
+    }
+  }
+
+  return fallback;
+}
+
+function buildDraftPayload(values: Partial<Record<keyof StationFormValues, unknown>>) {
+  const draftName =
+    typeof values.name === "string" && values.name.trim().length >= 2
+      ? values.name.trim()
+      : `Nouvelle station ${new Date().getTime()}`;
+
+  const draftLocation =
+    typeof values.location === "string" && values.location.trim().length >= 2
+      ? values.location.trim()
+      : "Localisation a definir";
+
+  const draftDescription =
+    typeof values.description === "string" && values.description.trim().length >= 10
+      ? values.description.trim()
+      : "Station en preparation. Les informations detaillees seront ajoutees prochainement.";
+
+  const draftRichContent =
+    typeof values.richContent === "string" && values.richContent.trim().length > 0
+      ? values.richContent.trim()
+      : undefined;
+
+  const draftEquipment = Array.isArray(values.equipment) && values.equipment.length > 0
+    ? values.equipment
+    : undefined;
+
+  const draftStatus =
+    values.status === "OPEN" ||
+    values.status === "COMING_SOON" ||
+    values.status === "CLOSED" ||
+    values.status === "MAINTENANCE"
+      ? values.status
+      : "COMING_SOON";
+
+  const imageValue =
+    typeof values.image === "string" && values.image.trim().length > 0 ? values.image.trim() : null;
+
+  const openYear = toNumberOrFallback(values.openYear, new Date().getFullYear());
+
+  return {
+    name: draftName,
+    location: draftLocation,
+    lat: toNumberOrFallback(values.lat, 46.1789),
+    lng: toNumberOrFallback(values.lng, -1.3856),
+    description: draftDescription,
+    richContent: draftRichContent,
+    equipment: draftEquipment,
+    status: draftStatus as StationStatus,
+    openYear,
+    image: imageValue
+  };
+}
+
 function toPayload(values: StationFormValues) {
   return {
-    name: values.name,
-    location: values.location,
+    name: values.name.trim(),
+    location: values.location.trim(),
     lat: values.lat,
     lng: values.lng,
-    description: values.description,
-    richContent: values.richContent?.trim() || undefined,
+    description: values.description.trim(),
+    richContent: values.richContent?.trim() || null,
+    equipment: values.equipment && values.equipment.length > 0 ? values.equipment : null,
     status: values.status as StationStatus,
     openYear: values.openYear ?? undefined,
     image: values.image?.trim() || null
@@ -74,6 +144,7 @@ export function StationForm({ stationId }: StationFormProps) {
       lng: -1.3856,
       description: "",
       richContent: "",
+      equipment: [],
       status: "COMING_SOON",
       openYear: new Date().getFullYear(),
       image: ""
@@ -100,6 +171,7 @@ export function StationForm({ stationId }: StationFormProps) {
       lng: station.lng,
       description: station.description,
       richContent: station.richContent ?? "",
+      equipment: station.equipment ?? [],
       status: station.status,
       openYear: station.openYear ?? new Date().getFullYear(),
       image: station.image ?? ""
@@ -107,15 +179,19 @@ export function StationForm({ stationId }: StationFormProps) {
     setGallery(station.gallery ?? []);
   }, [form, station]);
 
-  const createDraftStation = async (values: StationFormValues) => {
-    const createdStation = await createStation.mutateAsync(toPayload(values));
+  const syncCreatedStation = (createdStation: { id: string; gallery?: StationImage[] }) => {
     setPersistedStationId(createdStation.id);
     setGallery(createdStation.gallery ?? []);
 
     if (typeof window !== "undefined" && window.location.pathname.endsWith("/stations/new")) {
       window.history.replaceState(window.history.state, "", `/stations/${createdStation.id}`);
     }
+  };
 
+  const createStationDraft = async (values: Partial<Record<keyof StationFormValues, unknown>>) => {
+    const payload = buildDraftPayload(values);
+    const createdStation = await createStation.mutateAsync(payload);
+    syncCreatedStation(createdStation);
     return createdStation;
   };
 
@@ -123,7 +199,9 @@ export function StationForm({ stationId }: StationFormProps) {
     if (activeStationId) {
       await updateStation.mutateAsync({ id: activeStationId, values: toPayload(values) });
     } else {
-      await createDraftStation(values);
+      const createdStation = await createStation.mutateAsync(toPayload(values));
+      syncCreatedStation(createdStation);
+      toast.success("Station creee avec succes.");
     }
 
     router.push("/stations");
@@ -135,17 +213,11 @@ export function StationForm({ stationId }: StationFormProps) {
       return true;
     }
 
-    const isValid = await form.trigger();
-
-    if (!isValid) {
-      toast.error("Renseignez les champs requis avant d'ajouter des images.");
-      return false;
-    }
-
     setIsPreparingGallery(true);
 
     try {
-      await createDraftStation(form.getValues());
+      await createStationDraft(form.getValues());
+      toast.success("La galerie est active. Vous pouvez maintenant ajouter vos images.");
       return true;
     } catch {
       return false;
@@ -172,10 +244,17 @@ export function StationForm({ stationId }: StationFormProps) {
     const uploadedImages = Array.isArray(response.data.data) ? response.data.data : [response.data.data];
     const uploadedImage = uploadedImages[0] as StationImage;
 
-    return {
+    const normalizedImage = {
       ...uploadedImage,
       url: resolveApiAssetUrl(uploadedImage.url) ?? uploadedImage.url
     };
+
+    const currentCover = form.getValues("image");
+    if (!currentCover) {
+      form.setValue("image", normalizedImage.url, { shouldDirty: true });
+    }
+
+    return normalizedImage;
   };
 
   const isSubmitting = createStation.isPending || updateStation.isPending || isPreparingGallery;
@@ -245,7 +324,51 @@ export function StationForm({ stationId }: StationFormProps) {
 
               <div className="space-y-2">
                 <Label htmlFor="image">Image de couverture</Label>
-                <Input id="image" placeholder="https://..." {...form.register("image")} />
+                <div className="flex gap-2">
+                  <Input id="image" placeholder="https://..." {...form.register("image")} className="flex-1" />
+                  {gallery.length > 0 && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        if (gallery.length > 0) {
+                          form.setValue("image", gallery[0].url, { shouldDirty: true });
+                        }
+                      }}
+                      title="Utiliser la première image de la galerie comme couverture"
+                    >
+                      Utiliser galerie
+                    </Button>
+                  )}
+                </div>
+                {gallery.length > 0 && (
+                  <div className="mt-2 space-y-2">
+                    <p className="text-xs font-medium text-slate-600">Ou sélectionner de la galerie:</p>
+                    <div className="grid gap-2 grid-cols-4 sm:grid-cols-5">
+                      {gallery.map((img) => (
+                        <button
+                          key={img.id}
+                          type="button"
+                          onClick={() => {
+                            form.setValue("image", img.url, { shouldDirty: true });
+                          }}
+                          className={`relative aspect-square overflow-hidden rounded-lg border-2 transition-all ${
+                            form.watch("image") === img.url
+                              ? "border-ocean-500 shadow-md"
+                              : "border-slate-200 hover:border-slate-300"
+                          }`}
+                        >
+                          <img
+                            src={img.url}
+                            alt={img.alt || "Galerie"}
+                            className="h-full w-full object-cover"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <p className="text-sm text-red-500">{form.formState.errors.image?.message}</p>
               </div>
 
@@ -258,6 +381,41 @@ export function StationForm({ stationId }: StationFormProps) {
                   {...form.register("description")}
                 />
                 <p className="text-sm text-red-500">{form.formState.errors.description?.message}</p>
+              </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <Label>Materiel disponible</Label>
+                <div className="space-y-3">
+                  {["kayak_solo", "kayak_tandem", "paddle"].map((equipmentType) => {
+                    const labels: Record<string, string> = {
+                      kayak_solo: "Kayak solo",
+                      kayak_tandem: "Kayak tandem",
+                      paddle: "Paddle"
+                    };
+                    const isChecked = form.watch("equipment")?.includes(equipmentType as any) ?? false;
+                    return (
+                      <div key={equipmentType} className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          id={equipmentType}
+                          checked={isChecked}
+                          onChange={(e) => {
+                            const currentEquipment = form.getValues("equipment") ?? [];
+                            if (e.target.checked) {
+                              form.setValue("equipment", [...currentEquipment, equipmentType as any], { shouldDirty: true });
+                            } else {
+                              form.setValue("equipment", currentEquipment.filter((item) => item !== equipmentType), { shouldDirty: true });
+                            }
+                          }}
+                          className="h-4 w-4 rounded border-slate-300 cursor-pointer"
+                        />
+                        <Label htmlFor={equipmentType} className="cursor-pointer">
+                          {labels[equipmentType] || equipmentType}
+                        </Label>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </Card>
