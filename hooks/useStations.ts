@@ -45,7 +45,11 @@ export function useStations() {
       const response = await api.get("/stations");
       const payload = (response.data.data || response.data) as Station[];
       return Array.isArray(payload) ? payload.map(normalizeStation) : [];
-    }
+    },
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: "always"
   });
 }
 
@@ -113,11 +117,18 @@ export function useDeleteStation() {
       return { id, payload: response.data.data || response.data };
     },
     onSuccess: async ({ id }) => {
+      // Update the cache immediately
       queryClient.setQueryData<Station[]>(stationKeys.all, (current = []) =>
         current.filter((station) => station.id !== id)
       );
+      
+      // Also remove from detail cache
+      queryClient.removeQueries({ queryKey: stationKeys.detail(id) });
+      
       toast.success("Station supprimee.");
-      await queryClient.invalidateQueries({ queryKey: stationKeys.all });
+      
+      // Refetch to ensure consistency with server
+      await queryClient.refetchQueries({ queryKey: stationKeys.all });
     },
     onError: (error: Error) => {
       toast.error(error.message);

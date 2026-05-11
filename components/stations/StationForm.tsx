@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -32,7 +33,8 @@ const stationSchema = z.object({
   equipment: z.array(z.enum(["kayak_solo", "kayak_tandem", "paddle"])).optional(),
   status: z.enum(["OPEN", "COMING_SOON", "CLOSED", "MAINTENANCE"]),
   openYear: z.coerce.number().min(2020).max(2050).optional().nullable(),
-  image: z.union([z.literal(""), z.string().url("Ajoutez une image valide.")]).optional().nullable()
+  image: z.union([z.literal(""), z.string().url("Ajoutez une image valide.")]).optional().nullable(),
+  bookingUrl: z.union([z.literal(""), z.string().url("Entrez une URL valide.")]).optional().nullable()
 });
 
 type StationFormValues = z.infer<typeof stationSchema>;
@@ -120,7 +122,8 @@ function toPayload(values: StationFormValues) {
     equipment: values.equipment && values.equipment.length > 0 ? values.equipment : null,
     status: values.status as StationStatus,
     openYear: values.openYear ?? undefined,
-    image: values.image?.trim() || null
+    image: values.image?.trim() || null,
+    bookingUrl: values.bookingUrl?.trim() || null
   };
 }
 
@@ -147,7 +150,8 @@ export function StationForm({ stationId }: StationFormProps) {
       equipment: [],
       status: "COMING_SOON",
       openYear: new Date().getFullYear(),
-      image: ""
+      image: "",
+      bookingUrl: ""
     }
   });
 
@@ -174,7 +178,8 @@ export function StationForm({ stationId }: StationFormProps) {
       equipment: station.equipment ?? [],
       status: station.status,
       openYear: station.openYear ?? new Date().getFullYear(),
-      image: station.image ?? ""
+      image: station.image ?? "",
+      bookingUrl: station.bookingUrl ?? ""
     });
     setGallery(station.gallery ?? []);
   }, [form, station]);
@@ -209,21 +214,7 @@ export function StationForm({ stationId }: StationFormProps) {
   };
 
   const handleGalleryActivation = async () => {
-    if (activeStationId) {
-      return true;
-    }
-
-    setIsPreparingGallery(true);
-
-    try {
-      await createStationDraft(form.getValues());
-      toast.success("La galerie est active. Vous pouvez maintenant ajouter vos images.");
-      return true;
-    } catch {
-      return false;
-    } finally {
-      setIsPreparingGallery(false);
-    }
+    return false;
   };
 
   const handleImageUpload = async (file: File): Promise<StationImage> => {
@@ -303,6 +294,14 @@ export function StationForm({ stationId }: StationFormProps) {
                   <option value="MAINTENANCE">Maintenance</option>
                 </Select>
               </div>
+
+              {form.watch("status") === "OPEN" && (
+                <div className="space-y-2">
+                  <Label htmlFor="bookingUrl">URL de la station</Label>
+                  <Input id="bookingUrl" placeholder="https://..." {...form.register("bookingUrl")} />
+                  <p className="text-sm text-red-500">{form.formState.errors.bookingUrl?.message}</p>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="lat">Latitude</Label>
@@ -442,7 +441,7 @@ export function StationForm({ stationId }: StationFormProps) {
             <CardDescription>
               {isEditing
                 ? "Ajoutez des images supplementaires pour illustrer la station."
-                : "Un clic ici enregistre la station puis active aussitot la galerie."}
+                : "Remplissez les informations ci-dessus et cliquez sur 'Creer la station' pour pouvoir ajouter des images."}
             </CardDescription>
           </CardHeader>
           <div className="space-y-3 p-6">
@@ -455,7 +454,7 @@ export function StationForm({ stationId }: StationFormProps) {
               onUpload={handleImageUpload}
               isLoading={isSubmitting}
               disabled={!activeStationId}
-              disabledMessage="Cliquez pour enregistrer la station et activer la galerie."
+              disabledMessage="Creez la station d'abord pour ajouter des images."
               onRequestActivation={handleGalleryActivation}
             />
           </div>

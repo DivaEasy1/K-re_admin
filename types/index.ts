@@ -26,6 +26,7 @@ export interface Station {
   equipment?: EquipmentType[] | null;
   image?: string | null;
   imagePublicId?: string | null;
+  bookingUrl?: string | null;
   gallery: StationImage[];
   isActive?: boolean;
   createdAt?: string;

@@ -77,7 +77,9 @@ export function ImageGalleryManager({
     try {
       await uploadFiles(Array.from(files));
     } finally {
-      event.currentTarget.value = "";
+      if (inputRef.current) {
+        inputRef.current.value = "";
+      }
     }
   };
 
