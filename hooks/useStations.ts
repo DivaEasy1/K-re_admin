@@ -23,6 +23,7 @@ type StationPayload = {
   status: Station["status"];
   openYear?: number | null;
   image?: string | null;
+  bookingUrl?: string | null;
 };
 
 function normalizeStation(station: Station) {
@@ -44,12 +45,24 @@ export function useStations() {
     queryFn: async () => {
       const response = await api.get("/stations");
       const payload = (response.data.data || response.data) as Station[];
-      return Array.isArray(payload) ? payload.map(normalizeStation) : [];
+      const stations = Array.isArray(payload) ? payload.map(normalizeStation) : [];
+
+      if (process.env.NODE_ENV !== "production") {
+        console.log("[stations] fetched list", {
+          count: stations.length,
+          stations: stations.map((station) => ({
+            id: station.id,
+            name: station.name,
+            status: station.status,
+            location: station.location,
+            image: station.image
+          }))
+        });
+      }
+
+      return stations;
     },
-    staleTime: 0,
-    gcTime: 0,
-    refetchOnMount: "always",
-    refetchOnWindowFocus: "always"
+    staleTime: 0
   });
 }
 
@@ -74,7 +87,7 @@ export function useCreateStation() {
     },
     onSuccess: async (createdStation) => {
       queryClient.setQueryData<Station[]>(stationKeys.all, (current = []) => [createdStation, ...current]);
-      queryClient.setQueryData<Station>(stationKeys.detail(createdStation.id), createdStation);
+      toast.success("Station creee avec succes.");
       await queryClient.invalidateQueries({ queryKey: stationKeys.all });
     },
     onError: (error: Error) => {
@@ -114,21 +127,14 @@ export function useDeleteStation() {
   return useMutation({
     mutationFn: async (id: string) => {
       const response = await api.delete(`/stations/${id}`);
-      return { id, payload: response.data.data || response.data };
+      return response.data.data || response.data;
     },
-    onSuccess: async ({ id }) => {
-      // Update the cache immediately
+    onSuccess: async (_, deletedId) => {
       queryClient.setQueryData<Station[]>(stationKeys.all, (current = []) =>
-        current.filter((station) => station.id !== id)
+        current.filter((station) => station.id !== deletedId)
       );
-      
-      // Also remove from detail cache
-      queryClient.removeQueries({ queryKey: stationKeys.detail(id) });
-      
       toast.success("Station supprimee.");
-      
-      // Refetch to ensure consistency with server
-      await queryClient.refetchQueries({ queryKey: stationKeys.all });
+      await queryClient.invalidateQueries({ queryKey: stationKeys.all });
     },
     onError: (error: Error) => {
       toast.error(error.message);

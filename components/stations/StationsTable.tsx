@@ -68,11 +68,12 @@ function StationImageCell({
 }
 
 export function StationsTable() {
-  const { data, isLoading } = useStations();
+  const { data, isLoading, isFetching, isFetchedAfterMount, isError, error } = useStations();
   const deleteStation = useDeleteStation();
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<StationStatus | "ALL">("ALL");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const isWaitingForFreshData = !isError && !isFetchedAfterMount && (isLoading || isFetching);
 
   const filteredStations = useMemo(() => {
     const stationList = data ?? [];
@@ -119,11 +120,21 @@ export function StationsTable() {
           </div>
         }
       >
-        {isLoading ? (
+        {isWaitingForFreshData ? (
           <div className="space-y-2 p-4">
             {Array.from({ length: 5 }).map((_, index) => (
               <Skeleton key={index} className="h-12 w-full" />
             ))}
+          </div>
+        ) : isError ? (
+          <div className="p-4">
+            <EmptyState
+              title="Impossible de charger les stations"
+              description={error instanceof Error ? error.message : "Une erreur est survenue lors du chargement."}
+              actionLabel="Creer une station"
+              actionHref="/stations/new"
+              icon="ST"
+            />
           </div>
         ) : filteredStations.length === 0 ? (
           <div className="p-4">

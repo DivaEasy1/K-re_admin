@@ -214,7 +214,22 @@ export function StationForm({ stationId }: StationFormProps) {
   };
 
   const handleGalleryActivation = async () => {
-    return false;
+    if (activeStationId) {
+      return true;
+    }
+
+    try {
+      setIsPreparingGallery(true);
+      const values = form.getValues();
+      await createStationDraft(values);
+      return true;
+    } catch (error) {
+      console.error("Failed to prepare gallery:", error);
+      toast.error("Impossible de creer la station brouillon.");
+      return false;
+    } finally {
+      setIsPreparingGallery(false);
+    }
   };
 
   const handleImageUpload = async (file: File): Promise<StationImage> => {
