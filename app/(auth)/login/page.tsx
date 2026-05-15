@@ -62,12 +62,12 @@ export default function LoginPage() {
             <h1 className="font-display text-5xl font-semibold leading-[1.08] text-white">
               Connectez-vous pour gerer les activites et l&apos;administration K-Re.
             </h1>
-            <p className="max-w-xl text-lg leading-8 text-slate-300">
+            {/* <p className="max-w-xl text-lg leading-8 text-slate-300">
               Un espace de travail clair pour l&apos;equipe admin, avec une authentification securisee et une navigation fluide.
-            </p>
+            </p> */}
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          {/* <div className="grid gap-4 sm:grid-cols-2">
             <Card className="border-white/18 bg-white p-5 text-slate-900 shadow-xl shadow-slate-950/10">
               <div className="flex items-start gap-3">
                 <div className="mt-0.5 flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-100 text-sky-600">
@@ -95,7 +95,7 @@ export default function LoginPage() {
                 </div>
               </div>
             </Card>
-          </div>
+          </div> */}
         </section>
 
         <Card className="mx-auto w-full max-w-md border-white/10 bg-slate-900/45 p-8 text-white shadow-2xl shadow-slate-950/30 backdrop-blur-2xl">

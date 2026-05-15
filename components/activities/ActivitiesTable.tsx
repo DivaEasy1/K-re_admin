@@ -181,9 +181,9 @@ export function ActivitiesTable() {
           </div>
         ) : (
           <>
-            <div className="border-b border-border/70 px-4 py-2 text-[11px] text-muted-foreground">
+            {/* <div className="border-b border-border/70 px-4 py-2 text-[11px] text-muted-foreground">
               {filteredActivities.length} activite(s) affichee(s) sur {data?.length ?? 0} recue(s) depuis l&apos;API.
-            </div>
+            </div> */}
             <table className="min-w-full text-left text-xs">
               <thead className="bg-slate-50/80 text-[10px] uppercase tracking-[0.12em] text-muted-foreground dark:bg-slate-900/30">
                 <tr>

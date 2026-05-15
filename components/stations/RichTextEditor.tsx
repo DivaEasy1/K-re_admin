@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import type { ComponentType } from "react";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -96,6 +96,7 @@ function ToolbarButton({ icon: Icon, label, title, isActive, disabled, onClick }
 
 export function RichTextEditor({ value, onChange, label }: RichTextEditorProps) {
   const normalizedValue = normalizeEditorValue(value);
+  const [wordCount, setWordCount] = useState(0);
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -126,7 +127,11 @@ export function RichTextEditor({ value, onChange, label }: RichTextEditorProps) 
       }
     },
     onUpdate: ({ editor: currentEditor }) => {
-      onChange(currentEditor.isEmpty ? "" : currentEditor.getHTML());
+      const isEmpty = currentEditor.isEmpty;
+      const text = currentEditor.getText().trim();
+      const count = text ? text.split(/\s+/).length : 0;
+      setWordCount(count);
+      onChange(isEmpty ? "" : currentEditor.getHTML());
     }
   });
 
@@ -141,21 +146,21 @@ export function RichTextEditor({ value, onChange, label }: RichTextEditorProps) 
       if (!editor.isEmpty) {
         editor.commands.clearContent(false);
       }
-
+      setWordCount(0);
       return;
     }
 
     if (editor.getHTML() !== nextValue) {
       editor.commands.setContent(nextValue, { emitUpdate: false });
+      const text = editor.getText().trim();
+      const count = text ? text.split(/\s+/).length : 0;
+      setWordCount(count);
     }
   }, [editor, value]);
 
   if (!editor) {
     return null;
   }
-
-  const text = editor.getText().trim();
-  const wordCount = text ? text.split(/\s+/).length : 0;
 
   return (
     <div className="space-y-3">
@@ -259,7 +264,7 @@ export function RichTextEditor({ value, onChange, label }: RichTextEditorProps) 
         </div>
 
         <div className="relative bg-white">
-          {editor.isEmpty ? (
+          {wordCount === 0 ? (
             <p className="pointer-events-none absolute left-5 top-4 max-w-lg text-sm leading-7 text-slate-400">
               Ajoutez une presentation detaillee, des points forts, des conseils pratiques ou une mise en contexte pour la station.
             </p>

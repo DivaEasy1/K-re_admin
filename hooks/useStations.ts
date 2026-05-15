@@ -19,6 +19,10 @@ type StationPayload = {
   lng: number;
   description: string;
   richContent?: string | null;
+  highlight?: string | null;
+  ambience?: string | null;
+  practicalInfo?: string[] | null;
+  nearbyHighlights?: string[] | null;
   equipment?: Station["equipment"];
   status: Station["status"];
   openYear?: number | null;
@@ -26,9 +30,25 @@ type StationPayload = {
   bookingUrl?: string | null;
 };
 
+function normalizeStringArray(value: unknown): string[] | null {
+  if (!Array.isArray(value)) {
+    return null;
+  }
+
+  const items = value
+    .map((item) => (typeof item === "string" ? item.trim() : ""))
+    .filter(Boolean);
+
+  return items.length > 0 ? items : null;
+}
+
 function normalizeStation(station: Station) {
   return {
     ...station,
+    highlight: station.highlight?.trim() || null,
+    ambience: station.ambience?.trim() || null,
+    practicalInfo: normalizeStringArray(station.practicalInfo),
+    nearbyHighlights: normalizeStringArray(station.nearbyHighlights),
     image: resolveApiAssetUrl(station.image),
     gallery: Array.isArray(station.gallery)
       ? station.gallery.map((image) => ({

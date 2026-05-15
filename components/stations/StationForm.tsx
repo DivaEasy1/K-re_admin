@@ -3,7 +3,6 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Loader2, Save } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -30,6 +29,10 @@ const stationSchema = z.object({
   lng: z.coerce.number().min(-180).max(180, "Longitude invalide."),
   description: z.string().trim().min(10, "La description est trop courte."),
   richContent: z.string().optional(),
+  highlight: z.string().optional(),
+  ambience: z.string().optional(),
+  practicalInfoText: z.string().optional(),
+  nearbyHighlightsText: z.string().optional(),
   equipment: z.array(z.enum(["kayak_solo", "kayak_tandem", "paddle"])).optional(),
   status: z.enum(["OPEN", "COMING_SOON", "CLOSED", "MAINTENANCE"]),
   openYear: z.coerce.number().min(2020).max(2050).optional().nullable(),
@@ -57,6 +60,27 @@ function toNumberOrFallback(value: unknown, fallback: number) {
   }
 
   return fallback;
+}
+
+function normalizeOptionalText(value: unknown) {
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
+}
+
+function parseListInput(value: unknown) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const items = value
+    .split(/\r?\n/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  return items.length > 0 ? items : null;
+}
+
+function stringifyList(items?: string[] | null) {
+  return Array.isArray(items) && items.length > 0 ? items.join("\n") : "";
 }
 
 function buildDraftPayload(values: Partial<Record<keyof StationFormValues, unknown>>) {
@@ -96,6 +120,8 @@ function buildDraftPayload(values: Partial<Record<keyof StationFormValues, unkno
     typeof values.image === "string" && values.image.trim().length > 0 ? values.image.trim() : null;
 
   const openYear = toNumberOrFallback(values.openYear, new Date().getFullYear());
+  const practicalInfo = parseListInput(values.practicalInfoText);
+  const nearbyHighlights = parseListInput(values.nearbyHighlightsText);
 
   return {
     name: draftName,
@@ -104,6 +130,10 @@ function buildDraftPayload(values: Partial<Record<keyof StationFormValues, unkno
     lng: toNumberOrFallback(values.lng, -1.3856),
     description: draftDescription,
     richContent: draftRichContent,
+    highlight: normalizeOptionalText(values.highlight),
+    ambience: normalizeOptionalText(values.ambience),
+    practicalInfo,
+    nearbyHighlights,
     equipment: draftEquipment,
     status: draftStatus as StationStatus,
     openYear,
@@ -119,6 +149,10 @@ function toPayload(values: StationFormValues) {
     lng: values.lng,
     description: values.description.trim(),
     richContent: values.richContent?.trim() || null,
+    highlight: values.highlight?.trim() || null,
+    ambience: values.ambience?.trim() || null,
+    practicalInfo: parseListInput(values.practicalInfoText),
+    nearbyHighlights: parseListInput(values.nearbyHighlightsText),
     equipment: values.equipment && values.equipment.length > 0 ? values.equipment : null,
     status: values.status as StationStatus,
     openYear: values.openYear ?? undefined,
@@ -132,6 +166,7 @@ export function StationForm({ stationId }: StationFormProps) {
   const [persistedStationId, setPersistedStationId] = useState(stationId ?? "");
   const [gallery, setGallery] = useState<StationImage[]>([]);
   const [isPreparingGallery, setIsPreparingGallery] = useState(false);
+  const [wasAutoDrafted, setWasAutoDrafted] = useState(false);
   const activeStationId = stationId ?? persistedStationId;
   const isEditing = Boolean(activeStationId);
   const { data: station, isLoading: isLoadingStation } = useStation(activeStationId);
@@ -147,6 +182,10 @@ export function StationForm({ stationId }: StationFormProps) {
       lng: -1.3856,
       description: "",
       richContent: "",
+      highlight: "",
+      ambience: "",
+      practicalInfoText: "",
+      nearbyHighlightsText: "",
       equipment: [],
       status: "COMING_SOON",
       openYear: new Date().getFullYear(),
@@ -175,6 +214,10 @@ export function StationForm({ stationId }: StationFormProps) {
       lng: station.lng,
       description: station.description,
       richContent: station.richContent ?? "",
+      highlight: station.highlight ?? "",
+      ambience: station.ambience ?? "",
+      practicalInfoText: stringifyList(station.practicalInfo),
+      nearbyHighlightsText: stringifyList(station.nearbyHighlights),
       equipment: station.equipment ?? [],
       status: station.status,
       openYear: station.openYear ?? new Date().getFullYear(),
@@ -184,9 +227,12 @@ export function StationForm({ stationId }: StationFormProps) {
     setGallery(station.gallery ?? []);
   }, [form, station]);
 
-  const syncCreatedStation = (createdStation: { id: string; gallery?: StationImage[] }) => {
+  const syncCreatedStation = (createdStation: { id: string; gallery?: StationImage[] }, isAuto: boolean = false) => {
     setPersistedStationId(createdStation.id);
     setGallery(createdStation.gallery ?? []);
+    if (isAuto) {
+      setWasAutoDrafted(true);
+    }
 
     if (typeof window !== "undefined" && window.location.pathname.endsWith("/stations/new")) {
       window.history.replaceState(window.history.state, "", `/stations/${createdStation.id}`);
@@ -196,7 +242,7 @@ export function StationForm({ stationId }: StationFormProps) {
   const createStationDraft = async (values: Partial<Record<keyof StationFormValues, unknown>>) => {
     const payload = buildDraftPayload(values);
     const createdStation = await createStation.mutateAsync(payload);
-    syncCreatedStation(createdStation);
+    syncCreatedStation(createdStation, true);
     return createdStation;
   };
 
@@ -265,14 +311,24 @@ export function StationForm({ stationId }: StationFormProps) {
 
   const isSubmitting = createStation.isPending || updateStation.isPending || isPreparingGallery;
 
+  const handleBackClick = () => {
+    if (wasAutoDrafted) {
+      const confirmed = window.confirm(
+        "Êtes-vous sûr de vouloir annuler la création de cette station? Les modifications seront perdues."
+      );
+      if (!confirmed) {
+        return;
+      }
+    }
+    router.push("/stations");
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Button variant="outline" asChild>
-          <Link href="/stations">
-            <ArrowLeft className="h-4 w-4" />
-            Retour aux stations
-          </Link>
+        <Button variant="outline" onClick={handleBackClick}>
+          <ArrowLeft className="h-4 w-4" />
+          Retour aux stations
         </Button>
         <Button form="station-form" type="submit" disabled={isSubmitting}>
           {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
@@ -395,6 +451,47 @@ export function StationForm({ stationId }: StationFormProps) {
                   {...form.register("description")}
                 />
                 <p className="text-sm text-red-500">{form.formState.errors.description?.message}</p>
+              </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="highlight">Mise en avant</Label>
+                <Input
+                  id="highlight"
+                  placeholder="Ex: Depart face a l'anse de Pampin"
+                  {...form.register("highlight")}
+                />
+              </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="ambience">Ambiance</Label>
+                <Textarea
+                  id="ambience"
+                  placeholder="Decrivez l'ambiance generale du spot..."
+                  className="min-h-[120px]"
+                  {...form.register("ambience")}
+                />
+              </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="practicalInfoText">Infos pratiques</Label>
+                <Textarea
+                  id="practicalInfoText"
+                  placeholder="Une information pratique par ligne"
+                  className="min-h-[140px]"
+                  {...form.register("practicalInfoText")}
+                />
+                <p className="text-xs text-slate-500">Ajoutez une information pratique par ligne.</p>
+              </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="nearbyHighlightsText">Points forts a proximite</Label>
+                <Textarea
+                  id="nearbyHighlightsText"
+                  placeholder="Un point fort a proximite par ligne"
+                  className="min-h-[120px]"
+                  {...form.register("nearbyHighlightsText")}
+                />
+                <p className="text-xs text-slate-500">Ajoutez un element par ligne pour alimenter les badges de la fiche station.</p>
               </div>
 
               <div className="space-y-2 md:col-span-2">
