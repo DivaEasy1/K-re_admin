@@ -26,13 +26,24 @@ async function requestCurrentAdmin() {
   return (response.data.data || response.data) as AuthUser;
 }
 
+let refreshPromise: Promise<boolean> | null = null;
+
 export async function refreshAuthToken() {
-  try {
-    await api.post("/auth/refresh", {});
-    return true;
-  } catch {
-    return false;
+  if (!refreshPromise) {
+    refreshPromise = (async () => {
+      try {
+        clearCSRFToken();
+        await api.post("/auth/refresh", {});
+        return true;
+      } catch {
+        return false;
+      } finally {
+        refreshPromise = null;
+      }
+    })();
   }
+
+  return refreshPromise;
 }
 
 export async function getCurrentAdmin() {

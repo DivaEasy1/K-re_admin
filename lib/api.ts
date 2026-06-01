@@ -15,7 +15,7 @@ type ApiValidationIssue = {
 let csrfToken: string | null = null;
 
 const SKIP_REFRESH_PATHS = ["/auth/login", "/auth/logout", "/auth/refresh", "/auth/csrf-token"];
-const SKIP_CSRF_PATHS = ["/auth/login"];
+const SKIP_CSRF_PATHS = ["/auth/login", "/auth/refresh"];
 const STATE_CHANGING_METHODS = ["POST", "PUT", "DELETE", "PATCH"];
 
 function canRefresh(url?: string) {
