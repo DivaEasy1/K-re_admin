@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamicParams = false
+
 import Link from "next/link";
 import { Archive, ArrowLeft, Mail, Reply, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";

@@ -1,3 +1,4 @@
+export const dynamicParams = false
 export const generateStaticParams = async () => {
   return []
 }

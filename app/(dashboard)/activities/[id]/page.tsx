@@ -1,3 +1,4 @@
+export const dynamicParams = false
 import { ActivityForm } from "@/components/activities/ActivityForm";
 import { useActivities } from "@/hooks/useActivities";
 
