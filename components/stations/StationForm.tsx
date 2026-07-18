@@ -4,7 +4,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Loader2, Save } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -167,6 +167,7 @@ export function StationForm({ stationId }: StationFormProps) {
   const [gallery, setGallery] = useState<StationImage[]>([]);
   const [isPreparingGallery, setIsPreparingGallery] = useState(false);
   const [wasAutoDrafted, setWasAutoDrafted] = useState(false);
+  const persistedGalleryRef = useRef<StationImage[]>([]);
   const activeStationId = stationId ?? persistedStationId;
   const isEditing = Boolean(activeStationId);
   const { data: station, isLoading: isLoadingStation } = useStation(activeStationId);
@@ -225,11 +226,13 @@ export function StationForm({ stationId }: StationFormProps) {
       bookingUrl: station.bookingUrl ?? ""
     });
     setGallery(station.gallery ?? []);
+    persistedGalleryRef.current = station.gallery ?? [];
   }, [form, station]);
 
   const syncCreatedStation = (createdStation: { id: string; gallery?: StationImage[] }, isAuto: boolean = false) => {
     setPersistedStationId(createdStation.id);
     setGallery(createdStation.gallery ?? []);
+    persistedGalleryRef.current = createdStation.gallery ?? [];
     if (isAuto) {
       setWasAutoDrafted(true);
     }
@@ -246,13 +249,66 @@ export function StationForm({ stationId }: StationFormProps) {
     return createdStation;
   };
 
+  const syncGalleryChanges = async (stationId: string) => {
+    if (!stationId) {
+      return;
+    }
+
+    const previousGallery = persistedGalleryRef.current;
+    const currentGallery = gallery.map((image, index) => ({ ...image, position: index }));
+    const previousById = new Map(previousGallery.filter((image) => Boolean(image.id)).map((image) => [image.id, image]));
+    const currentById = new Map(currentGallery.filter((image) => Boolean(image.id)).map((image) => [image.id, image]));
+
+    const deletedImages = previousGallery.filter((image) => Boolean(image.id) && !currentById.has(image.id));
+
+    for (const image of deletedImages) {
+      if (!image.id) {
+        continue;
+      }
+
+      await api.delete(`/stations/image/${image.id}`);
+    }
+
+    for (const image of currentGallery) {
+      if (!image.id) {
+        continue;
+      }
+
+      const previousImage = previousById.get(image.id);
+      if (!previousImage) {
+        continue;
+      }
+
+      if (previousImage.alt !== image.alt) {
+        await api.patch(`/stations/image/${image.id}/alt`, { alt: image.alt });
+      }
+
+      if (previousImage.position !== image.position) {
+        await api.patch(`/stations/image/${image.id}/position`, { position: image.position });
+      }
+    }
+
+    persistedGalleryRef.current = currentGallery;
+  };
+
   const onSubmit = async (values: StationFormValues) => {
-    if (activeStationId) {
-      await updateStation.mutateAsync({ id: activeStationId, values: toPayload(values) });
-    } else {
-      const createdStation = await createStation.mutateAsync(toPayload(values));
-      syncCreatedStation(createdStation);
-      toast.success("Station creee avec succes.");
+    let savedStationId = activeStationId;
+
+    try {
+      if (activeStationId) {
+        await updateStation.mutateAsync({ id: activeStationId, values: toPayload(values) });
+      } else {
+        const createdStation = await createStation.mutateAsync(toPayload(values));
+        syncCreatedStation(createdStation);
+        savedStationId = createdStation.id;
+        toast.success("Station creee avec succes.");
+      }
+
+      await syncGalleryChanges(savedStationId);
+    } catch (error) {
+      console.error("Failed to save station and gallery:", error);
+      toast.error("Impossible d'enregistrer la station et la galerie.");
+      return;
     }
 
     router.push("/stations");
